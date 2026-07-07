@@ -13,7 +13,7 @@ ScenarioGenerator  (25–30 adversarial + normal test cases via Fireworks AI)
    ↓
 ExecutionEngine    (asyncio.gather — all scenarios run CONCURRENTLY)
    ↓
-JudgeEngine        (Gemma on Fireworks — scores each transcript)
+JudgeEngine        (DeepSeek V4 Pro on Fireworks — scores each transcript)
    ↓
 ReportAggregator   (weighted score + failure breakdown)
    ↓
