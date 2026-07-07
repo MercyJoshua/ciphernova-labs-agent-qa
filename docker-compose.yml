@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  # ── Demo Agent (deliberately flawed, for live demo) ──────────────────────
+  demo-agent:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: uvicorn demo_agent:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - qa-network
+
+  # ── Main Backend ──────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - FIREWORKS_API_KEY=${FIREWORKS_API_KEY}
+      - SCENARIO_MODEL=${SCENARIO_MODEL:-accounts/fireworks/models/llama-v3p1-8b-instruct}
+      - JUDGE_MODEL=${JUDGE_MODEL:-accounts/fireworks/models/gemma2-9b-it}
+      - MAX_CONCURRENCY=${MAX_CONCURRENCY:-30}
+      - MAX_TURNS=${MAX_TURNS:-3}
+      - FRONTEND_ORIGIN=http://localhost:3000
+    depends_on:
+      - demo-agent
+    networks:
+      - qa-network
+
+  # ── Frontend (stub — Hamza's responsibility) ──────────────────────────────
+  # TODO (Hamza): Replace this stub with the actual React/Next.js frontend.
+  # The frontend should:
+  #   - POST to http://backend:8000/run to start a test
+  #   - Poll GET http://backend:8000/results/{run_id} every 2s
+  #   - Display the results dashboard with score + transcript viewer
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    networks:
+      - qa-network
+
+networks:
+  qa-network:
+    driver: bridge
