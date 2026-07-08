@@ -9,9 +9,11 @@ export default function Header({ mode = "home" }: { mode?: HeaderMode }) {
   const [open, setOpen] = useState(false);
   const isSubmitPage = mode === "submit";
   const isResultsPage = mode === "results";
+  const actionButtonClass =
+    "inline-flex h-8 w-[7.5rem] items-center justify-center rounded-full px-2 text-[0.82rem] transition-all cursor-pointer";
   const links = [
     { label: "Overview", href: "/#method" },
-    { label: "Runs", href: "/#pricing" },
+    { label: "Runs", href: "/#runs" },
     { label: "FAQ", href: "/#faq" },
   ];
 
@@ -24,8 +26,8 @@ export default function Header({ mode = "home" }: { mode?: HeaderMode }) {
 
   return (
     <nav className="w-full max-w-[1600px] mx-auto flex items-center justify-between px-6 py-3 mb-3.5">
-      <Link href="/" className="text-[1.05rem] font-bold tracking-tight text-[--text]">
-        Pre-Flight Check
+      <Link href="/" className="text-[1.15rem] font-bold tracking-tight text-[--text]">
+        Preflight
       </Link>
 
       {/* Desktop nav */}
@@ -46,15 +48,9 @@ export default function Header({ mode = "home" }: { mode?: HeaderMode }) {
       <div className="hidden md:flex gap-2.5 items-center">
         <Link
           href={isSubmitPage || isResultsPage ? "/" : "/submit"}
-          className="rounded-full px-4 py-1.5 text-[0.82rem] font-medium bg-white/6 text-[--text] hover:bg-white/12 transition-all cursor-pointer"
+          className={`${actionButtonClass} font-medium bg-white/6 text-[--text] hover:bg-white/12`}
         >
           {isSubmitPage || isResultsPage ? "Back home" : "View demo"}
-        </Link>
-        <Link
-          href={isResultsPage ? "/submit" : "/results"}
-          className="rounded-full px-4 py-1.5 text-[0.82rem] font-semibold bg-white text-[#0a0a0f] border-0 hover:opacity-90 transition-all cursor-pointer"
-        >
-          {isResultsPage ? "Run again" : "Start a run"}
         </Link>
       </div>
 
@@ -90,10 +86,10 @@ export default function Header({ mode = "home" }: { mode?: HeaderMode }) {
           ))}
         </ul>
         <div className="flex flex-col gap-3 w-full">
-          <Link href={isSubmitPage || isResultsPage ? "/" : "/submit"} className="w-full py-3 px-4 text-[0.95rem] font-medium rounded-full bg-white/6 text-[--text] cursor-pointer">
+          <Link href={isSubmitPage || isResultsPage ? "/" : "/submit"} className="w-full h-12 inline-flex items-center justify-center px-4 text-[0.95rem] font-medium rounded-full bg-white/6 text-[--text] cursor-pointer">
             {isSubmitPage || isResultsPage ? "Back home" : "View demo"}
           </Link>
-          <Link href={isResultsPage ? "/submit" : "/results"} className="w-full py-3 px-4 text-[0.95rem] font-semibold rounded-full bg-white text-[#0a0a0f] cursor-pointer">
+          <Link href={isResultsPage ? "/submit" : "/results"} className="w-full h-12 inline-flex items-center justify-center px-4 text-[0.95rem] font-semibold rounded-full bg-white text-[#0a0a0f] cursor-pointer">
             {isResultsPage ? "Run again" : "Start a run"}
           </Link>
         </div>

@@ -18,9 +18,9 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section className="w-full max-w-[1600px] mx-auto px-10 py-[100px] max-[768px]:px-5 max-[768px]:py-[70px]">
+    <section className="w-full max-w-[1600px] mx-auto px-10 py-25 max-[768px]:px-5 max-[768px]:py-17.5">
       <div className="flex flex-col items-center text-center mb-16">
-        <div className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/[0.03] mb-6">
+        <div className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/3 mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-[--accent-pink] shadow-[0_0_8px_var(--accent-pink)]" />
           How it works
         </div>
@@ -36,11 +36,11 @@ export default function HowItWorks() {
         {steps.map((s, i) => (
           <div
             key={i}
-            className="xero-card relative rounded-[20px] p-7 pl-[30px] min-h-[220px] overflow-hidden"
+            className="xero-card relative rounded-[20px] p-7 pl-7.5 min-h-55 overflow-hidden max-[480px]:p-6 max-[480px]:pl-6"
           >
             {/* Glowing left spine */}
-            <span className="xero-step-spine absolute left-0 top-6 bottom-6 w-[2px] rounded-full" />
-            <div className="xero-mono font-mono text-[0.72rem] text-[--text-muted] tracking-[0.12em] mb-[18px]">
+            <span className="xero-step-spine absolute left-0 top-6 bottom-6 w-0.5 rounded-full" />
+            <div className="xero-mono font-mono text-[0.72rem] text-[--text-muted] tracking-[0.12em] mb-4.5">
               {s.n}
             </div>
             <h4 className="text-[1.05rem] font-medium m-0 mb-2">{s.title}</h4>

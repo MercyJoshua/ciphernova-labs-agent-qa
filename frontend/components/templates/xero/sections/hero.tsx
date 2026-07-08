@@ -132,7 +132,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="xero-card w-full max-w-[1600px] mx-auto rounded-[20px] overflow-hidden relative flex flex-col items-center text-center px-10 pt-20 pb-[70px] min-h-[640px]">
+    <section className="xero-card w-full max-w-[1600px] mx-auto rounded-[20px] overflow-hidden relative flex flex-col items-center text-center px-10 pt-20 pb-17.5 min-h-160 max-[640px]:px-5 max-[640px]:pt-14 max-[640px]:pb-16 max-[640px]:min-h-0">
       {/* Gradient arc */}
       <div className="xero-hero-arc absolute inset-0 pointer-events-none z-0" />
 
@@ -142,10 +142,10 @@ export default function Hero() {
       {/* Icon pipeline */}
       <div
         ref={pipelineRef}
-        className="relative flex items-center justify-center max-w-[700px] w-full mb-[52px] z-[1]"
+        className="relative flex items-center justify-center max-w-175 w-full mb-13 z-1 max-[640px]:mb-8"
       >
         <svg
-          className="absolute inset-0 w-full h-full overflow-visible z-[2] pointer-events-none"
+          className="absolute inset-0 w-full h-full overflow-visible z-2 pointer-events-none"
           preserveAspectRatio="none"
         >
           <defs>
@@ -184,11 +184,11 @@ export default function Hero() {
         {/* Left node — stack */}
         <div
           ref={nodeStackRef}
-          className="xero-node group relative w-[46px] h-[46px] rounded-full flex items-center justify-center z-[3] cursor-pointer transition-all duration-200"
+          className="xero-node group relative w-11.5 h-11.5 rounded-full flex items-center justify-center z-3 cursor-pointer transition-all duration-200 max-[640px]:w-8 max-[640px]:h-8"
         >
           {/* right glow (active via JS) */}
           <span
-            className="xero-glow-right node-right-glow absolute pointer-events-none rounded-full opacity-0 transition-opacity duration-300 z-[4]"
+            className="xero-glow-right node-right-glow absolute pointer-events-none rounded-full opacity-0 transition-opacity duration-300 z-4"
           />
           <svg
             viewBox="0 0 24 24"
@@ -204,33 +204,35 @@ export default function Hero() {
         </div>
 
         {/* Left pipeline line */}
-        <div className="xero-pipe-left w-[160px] max-[860px]:w-20 h-px" />
+        <div className="xero-pipe-left w-40 max-[860px]:w-20 max-[640px]:w-8 h-px" />
 
         {/* Center node */}
         <div className="relative flex items-center justify-center">
           <div
             ref={splashRef}
-            className="xero-splash absolute w-[100px] h-[100px] rounded-full pointer-events-none opacity-0 scale-[0.4] z-[2]"
+            className="xero-splash absolute w-25 h-25 rounded-full pointer-events-none opacity-0 scale-[0.4] z-2 max-[640px]:w-18 max-[640px]:h-18"
           />
           <div
             ref={nodeXRef}
-            className="xero-node-lg relative w-16 h-16 rounded-full flex items-center justify-center z-[3]"
+            className="xero-node-lg relative w-16 h-16 rounded-full flex items-center justify-center z-3 max-[640px]:w-12 max-[640px]:h-12"
           >
-            <XeroLogo size={28} />
+            <div className="max-[640px]:scale-75">
+              <XeroLogo size={28} />
+            </div>
           </div>
         </div>
 
         {/* Right pipeline line */}
-        <div className="xero-pipe-right w-[160px] max-[860px]:w-20 h-px" />
+        <div className="xero-pipe-right w-40 max-[860px]:w-20 max-[640px]:w-8 h-px" />
 
         {/* Right node — shield */}
         <div
           ref={nodeShieldRef}
-          className="xero-node relative w-[46px] h-[46px] rounded-full flex items-center justify-center z-[3] cursor-pointer transition-all duration-200"
+          className="xero-node relative w-11.5 h-11.5 rounded-full flex items-center justify-center z-3 cursor-pointer transition-all duration-200 max-[640px]:w-8 max-[640px]:h-8"
         >
           {/* left glow (active via JS) */}
           <span
-            className="xero-glow-left node-left-glow absolute pointer-events-none rounded-full opacity-0 transition-opacity duration-300 z-[4]"
+            className="xero-glow-left node-left-glow absolute pointer-events-none rounded-full opacity-0 transition-opacity duration-300 z-4"
           />
           <svg
             viewBox="0 0 24 24"
@@ -246,7 +248,7 @@ export default function Hero() {
       </div>
 
       {/* Hero text */}
-      <div className="max-w-[620px] z-[1] relative">
+      <div className="max-w-155 z-1 relative">
         <h1 className="xero-section-title-lg font-light leading-[1.1] tracking-tight mb-3.5 m-0">
           Stress-test every agent
           <strong className="xero-gradient-text block font-normal mt-1">
@@ -254,17 +256,15 @@ export default function Hero() {
           </strong>
         </h1>
         <p
-          className="text-[0.9rem] text-white/40 max-w-[440px] mx-auto mb-9 leading-[1.55]"
+          className="text-[0.9rem] text-white/40 max-w-110 mx-auto mb-9 leading-[1.55] max-[640px]:mb-7"
         >
           Run normal, edge-case, and adversarial conversations against any agent endpoint.
-          <br />
-          Get a reliability score, failure breakdown, and full transcripts in one pass.
         </p>
         <a
           href="/submit"
-          className="inline-block bg-white text-[#0a0a0f] px-8 py-3 rounded-full font-semibold text-[0.9rem] transition-all hover:opacity-90 hover:-translate-y-px"
+          className="inline-flex items-center justify-center bg-white text-[#0a0a0f] px-8 py-3 rounded-full font-semibold text-[0.9rem] transition-all hover:opacity-90 hover:-translate-y-px max-[640px]:w-full max-[640px]:max-w-60"
         >
-          View workflow
+          Preflight Check
         </a>
       </div>
     </section>

@@ -53,7 +53,7 @@ export default function SubmitAgentPage() {
               <h1 className="xero-section-title-lg font-light leading-[1.02] tracking-tight m-0 max-w-190">
                 Add the endpoint.
                 <br />
-                <strong className="xero-gradient-text font-normal">Describe the job. Run the pre-flight.</strong>
+                <strong className="xero-gradient-text font-normal">Describe the job. Run the preflight.</strong>
               </h1>
             </div>
 
@@ -103,7 +103,7 @@ export default function SubmitAgentPage() {
                     <textarea
                       value={description}
                       onChange={(event) => setDescription(event.target.value)}
-                      rows={7}
+                      rows={10}
                       placeholder="Describe what the agent does, who uses it, and what a good response looks like."
                       className="w-full resize-none border-0 bg-transparent text-[0.95rem] leading-[1.6] text-[--text] outline-none placeholder:text-white/25"
                     />
@@ -123,12 +123,12 @@ export default function SubmitAgentPage() {
 
                 <div className="flex flex-wrap gap-3 pt-2">
                   <Link href="/results" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.9rem] font-semibold text-[#0a0a0f] transition-all hover:opacity-90 hover:-translate-y-px">
-                    Start pre-flight run
+                    Preflight run
                     <ArrowRight className="h-4 w-4" />
                   </Link>
-                  <button className="inline-flex items-center rounded-full bg-white/6 px-6 py-3 text-[0.9rem] font-medium text-[--text] transition-all hover:bg-white/12">
+                  {/* <button className="inline-flex items-center rounded-full bg-white/6 px-6 py-3 text-[0.9rem] font-medium text-[--text] transition-all hover:bg-white/12">
                     Save draft
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </section>
@@ -141,7 +141,7 @@ export default function SubmitAgentPage() {
                   </div>
                   <div>
                     <div className="text-[0.9rem] font-medium text-[--text]">What happens next</div>
-                    <div className="text-[0.78rem] text-[--text-muted]">Built with the same dark cards and neon accents as the homepage.</div>
+                    {/* <div className="text-[0.78rem] text-[--text-muted]">A short summary of the automated checks and reports you'll get after running the preflight.</div> */}
                   </div>
                 </div>
 
@@ -165,7 +165,7 @@ export default function SubmitAgentPage() {
                   </div>
                   <div>
                     <div className="text-[0.9rem] font-medium text-[--text]">Run preview</div>
-                    <div className="text-[0.78rem] text-[--text-muted]">A quick summary of the report you will get.</div>
+                    {/* <div className="text-[0.78rem] text-[--text-muted]">A quick summary of the report you will get.</div> */}
                   </div>
                 </div>
 

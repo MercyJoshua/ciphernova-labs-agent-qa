@@ -23,9 +23,9 @@ const items = [
 
 export default function FAQ() {
   return (
-    <section id="faq" className="w-full max-w-[1600px] mx-auto px-10 py-[100px] max-[768px]:px-5 max-[768px]:py-[70px]">
+    <section id="faq" className="w-full max-w-[1600px] mx-auto px-10 py-25 max-[768px]:px-5 max-[768px]:py-17.5">
       <div className="flex flex-col items-center text-center mb-16">
-        <div className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/[0.03] mb-6">
+        <div className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/3 mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-[--accent-pink] shadow-[0_0_8px_var(--accent-pink)]" />
           Questions
         </div>
@@ -37,14 +37,14 @@ export default function FAQ() {
         </h2>
       </div>
 
-      <div className="max-w-[820px] mx-auto w-full">
+      <div className="max-w-205 mx-auto w-full">
         {items.map((it, i) => (
           <details key={i} className="group">
-            <summary className="w-full list-none text-[--text] py-[22px] px-1 text-[0.98rem] tracking-[-0.005em] flex items-center justify-between cursor-pointer gap-6 [&::-webkit-details-marker]:hidden">
+            <summary className="w-full list-none text-[--text] py-5.5 px-1 text-[0.98rem] tracking-[-0.005em] flex items-center justify-between cursor-pointer gap-6 [&::-webkit-details-marker]:hidden">
               <span>{it.q}</span>
               <svg
                 viewBox="0 0 24 24"
-                className="w-[18px] h-[18px] shrink-0 fill-none transition-transform duration-[250ms] group-open:rotate-180"
+                className="w-4.5 h-4.5 shrink-0 fill-none transition-transform duration-250 group-open:rotate-180"
                 stroke="var(--text-muted)"
                 strokeWidth={1.5}
                 strokeLinecap="round"
