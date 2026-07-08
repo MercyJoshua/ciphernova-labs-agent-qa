@@ -74,9 +74,9 @@ export default function ResultsPage() {
                   <br />
                   <strong className="xero-gradient-text font-normal">Your agent passed the harness, but not every scenario.</strong>
                 </h1>
-                <p className="mt-4 max-w-150 text-[0.95rem] leading-[1.65] text-white/45">
+                {/* <p className="mt-4 max-w-150 text-[0.95rem] leading-[1.65] text-white/45">
                   This page mirrors the landing page style so the final output feels like part of the same product: dark surfaces, glow accents, and high-contrast result cards.
-                </p>
+                </p> */}
               </div>
 
               <div className="flex flex-wrap gap-3">

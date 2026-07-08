@@ -7,7 +7,7 @@ const stats = [
 
 export default function Metrics() {
   return (
-    <section className="w-full max-w-[1600px] mx-auto px-10 py-[60px] max-[768px]:px-5">
+    <section className="w-full max-w-[1600px] mx-auto px-10 py-15 max-[768px]:px-5">
       <div className="xero-metrics-grid grid max-[980px]:grid-cols-2 max-[768px]:grid-cols-1">
         {stats.map((s, i) => (
           <div key={i} className="px-7 py-9 text-left">

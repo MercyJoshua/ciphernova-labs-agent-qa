@@ -20,8 +20,8 @@ export default function PreFlightPage() {
       <Features />
       <Showcase />
       <HowItWorks />
-      <Metrics />
-      <Testimonials />
+      {/* <Metrics /> */}
+      {/* <Testimonials /> */}
       <Pricing />
       <FAQ />
       <CTA />
