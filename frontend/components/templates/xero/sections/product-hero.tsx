@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { motion, type Variants } from "motion/react";
@@ -55,7 +54,7 @@ const fadeUp: Variants = {
   },
 };
 
-const heroImageSrc = "/2.png";
+const heroVideoSrc = "/hero-video.mp4";
 
 export default function ProductHero() {
   const router = useRouter();
@@ -89,7 +88,7 @@ export default function ProductHero() {
           shadow-[0_28px_120px_rgba(0,0,0,0.42)]
         "
       >
-        {/* Background Image */}
+        {/* Background Video */}
         <motion.div
           initial={{ opacity: 0, scale: 1.04 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -99,14 +98,17 @@ export default function ProductHero() {
           }}
           className="absolute inset-0"
         >
-          <Image
-            src={heroImageSrc}
-            alt="AI agent reliability inspection"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center"
-          />
+          <video
+            className="h-full w-full object-cover object-center"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+          >
+            <source src={heroVideoSrc} type="video/mp4" />
+          </video>
         </motion.div>
 
         {/* Overlay */}
