@@ -1,4 +1,5 @@
 import Header from "@/components/templates/xero/sections/header";
+import ProductHero from "@/components/templates/xero/sections/product-hero";
 import Hero from "@/components/templates/xero/sections/hero";
 import Brands from "@/components/templates/xero/sections/brands";
 import Features from "@/components/templates/xero/sections/features";
@@ -15,6 +16,7 @@ export default function PreFlightPage() {
   return (
     <>
       <Header />
+      <ProductHero />
       <Hero />
       <Brands />
       <Features />

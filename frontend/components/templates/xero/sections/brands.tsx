@@ -1,3 +1,7 @@
+"use client";
+
+import { motion, type Variants } from "motion/react";
+
 const ExpediaSVG = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5.5 h-5.5">
     <circle cx="12" cy="12" r="10" fill="currentColor" />
@@ -36,9 +40,29 @@ const LoomSVG = () => (
   </svg>
 );
 
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.08 },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+};
+
 export default function Brands() {
   return (
-    <div className="flex gap-16 max-[768px]:gap-8 max-[480px]:gap-6 px-6 pt-8 pb-2.5 flex-wrap justify-center w-full max-w-[1600px] mx-auto mb-20">
+    <motion.div
+      className="flex gap-16 max-[768px]:gap-8 max-[480px]:gap-6 px-6 pt-8 pb-2.5 flex-wrap justify-center w-full max-w-[1600px] mx-auto mb-20"
+      variants={sectionVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: false, amount: 0.3 }}
+    >
       {[
         { Icon: ExpediaSVG, label: "AMD" },
         { Icon: AsanaSVG, label: "Fireworks" },
@@ -46,14 +70,15 @@ export default function Brands() {
         { Icon: HubSpotSVG, label: "FastAPI" },
         { Icon: LoomSVG, label: "Next.js" },
       ].map(({ Icon, label }, i) => (
-        <div
+        <motion.div
           key={i}
+          variants={itemVariants}
           className="flex items-center gap-2.5 text-white/35 text-[1.1rem] font-medium whitespace-nowrap"
         >
           <Icon />
           <span>{label}</span>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }
