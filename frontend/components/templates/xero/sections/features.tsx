@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, type Variants } from "motion/react";
 
 const ITEMS = [
   {
@@ -218,35 +219,56 @@ function Eyebrow({ label }: { label: string }) {
   );
 }
 
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.08 },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+};
+
 export default function Features() {
   const [active, setActive] = useState(0);
 
   return (
-    <section
+    <motion.section
       id="method"
       className="w-full max-w-[1600px] mx-auto px-10 py-25 max-[768px]:px-5 max-[768px]:py-17.5"
+      variants={sectionVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: false, amount: 0.25 }}
     >
       <div className="flex flex-col items-center text-center mb-16">
-        <Eyebrow label="What it checks" />
-        <h2 className="xero-section-title font-light leading-[1.1] tracking-tight mb-4 m-0 max-w-190">
+        <motion.div variants={itemVariants}>
+          <Eyebrow label="What it checks" />
+        </motion.div>
+        <motion.h2 variants={itemVariants} className="xero-section-title font-light leading-[1.1] tracking-tight mb-4 m-0 max-w-190">
           One harness.
           <br />
           <strong className="xero-gradient-text font-normal">
             Every failure mode.
           </strong>
-        </h2>
-        <p className="text-[0.95rem] text-white/45 max-w-135 leading-[1.6] m-0">
+        </motion.h2>
+        <motion.p variants={itemVariants} className="text-[0.95rem] text-white/45 max-w-135 leading-[1.6] m-0">
           Preflight runs normal and adversarial conversations in parallel,
           then turns the transcripts into a reliability score and a failure report.
-        </p>
+        </motion.p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 max-w-275 mx-auto">
         {/* Accordion list */}
         <div className="flex flex-col">
           {ITEMS.map((item, i) => (
-            <button
+            <motion.button
               key={i}
+              variants={itemVariants}
               onClick={() => setActive(i)}
               className="xero-feat-row text-left w-full relative"
             >
@@ -276,12 +298,12 @@ export default function Features() {
                   </div>
                 </div>
               </div>
-            </button>
+            </motion.button>
           ))}
         </div>
 
         {/* Visual panel */}
-        <div className="lg:sticky lg:top-24 self-start">
+        <motion.div className="lg:sticky lg:top-24 self-start" variants={itemVariants}>
           <div className="xero-feat-visual-panel min-h-90 max-[768px]:min-h-75 max-[480px]:min-h-65 flex items-center justify-center relative overflow-hidden">
             <div className="xero-feat-panel-glow absolute inset-0 pointer-events-none" />
             <div className="relative w-full py-10">
@@ -297,8 +319,8 @@ export default function Features() {
               <div className="invisible py-10">{ITEMS[0].visual}</div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 }

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { motion, type Variants } from "motion/react";
 
 function CheckIcon() {
   return (
@@ -28,48 +31,74 @@ const CODE_HTML = `<span class="tok-com">// spin up a pre-flight run in one call
 <span class="tok-com">// review the score, failure reasons, and transcripts</span>
 <span class="tok-key">console</span>.<span class="tok-fn">log</span>(report.score, report.failures, report.transcripts);`;
 
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.08 },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+};
+
 export default function Showcase() {
   return (
-    <section id="runs" className="w-full max-w-[1600px] mx-auto px-10 py-25 max-[768px]:px-5 max-[768px]:py-17.5">
-      <div className="xero-card relative w-full rounded-[20px] overflow-hidden p-15 grid grid-cols-[1fr_1.1fr] gap-14 items-center max-[980px]:grid-cols-1 max-[980px]:gap-8 max-[768px]:p-8">
+    <motion.section
+      id="runs"
+      className="w-full max-w-[1600px] mx-auto px-10 py-25 max-[768px]:px-5 max-[768px]:py-17.5"
+      variants={sectionVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: false, amount: 0.25 }}
+    >
+      <motion.div
+        className="xero-card relative w-full rounded-[20px] overflow-hidden p-15 grid grid-cols-[1fr_1.1fr] gap-14 items-center max-[980px]:grid-cols-1 max-[980px]:gap-8 max-[768px]:p-8"
+        variants={itemVariants}
+      >
         {/* Copy */}
         <div>
-          <div className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/3 mb-4">
+          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/3 mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-[--accent-pink] shadow-[0_0_8px_var(--accent-pink)]" />
             Developer workflow
-          </div>
-          <h3 className="xero-section-title-md font-light leading-[1.15] tracking-tight mt-4 mb-4">
+          </motion.div>
+          <motion.h3 variants={itemVariants} className="xero-section-title-md font-light leading-[1.15] tracking-tight mt-4 mb-4">
             Point it at any agent,
             <br />
             <strong className="xero-gradient-text font-normal">
               keep your stack.
             </strong>
-          </h3>
-          <p className="text-[0.9rem] text-white/45 leading-[1.65] mb-7 max-w-110">
+          </motion.h3>
+          <motion.p variants={itemVariants} className="text-[0.9rem] text-white/45 leading-[1.65] mb-7 max-w-110">
             One endpoint and a short description. Preflight runs the conversations, scores the transcripts, and shows you what broke.
-          </p>
-          <ul className="list-none p-0 m-0 flex flex-col gap-3 mb-8">
+          </motion.p>
+          <motion.ul variants={sectionVariants} className="list-none p-0 m-0 flex flex-col gap-3 mb-8">
             {[
               "Normal, edge-case, ambiguity, injection, and attack-intent scenarios",
               "Parallel runs across any HTTP agent endpoint",
               "Gemma scoring with reliability breakdowns and transcripts",
             ].map((item, i) => (
-              <li key={i} className="flex items-start gap-3 text-[0.88rem] text-white/70">
+              <motion.li key={i} variants={itemVariants} className="flex items-start gap-3 text-[0.88rem] text-white/70">
                 <CheckIcon />
                 <span>{item}</span>
-              </li>
+              </motion.li>
             ))}
-          </ul>
-          <Link
+          </motion.ul>
+          <motion.div variants={itemVariants}>
+            <Link
             href="/submit"
             className="inline-block bg-white text-[#0a0a0f] px-8 py-3 rounded-full font-semibold text-[0.9rem] transition-all hover:opacity-90 hover:-translate-y-px"
           >
             See the workflow
-          </Link>
+            </Link>
+          </motion.div>
         </div>
 
         {/* Code panel */}
-        <div className="xero-code-panel relative rounded-[14px] overflow-hidden text-[0.78rem] leading-[1.7]">
+        <motion.div variants={itemVariants} className="xero-code-panel relative rounded-[14px] overflow-hidden text-[0.78rem] leading-[1.7]">
           {/* gradient border overlay */}
           <span className="xero-code-border absolute pointer-events-none rounded-[14px]" />
           <div className="xero-code-tab-bar flex items-center gap-2 px-3.5 py-3">
@@ -84,8 +113,8 @@ export default function Showcase() {
             className="p-[18px_22px_22px] text-white/75 whitespace-pre overflow-x-auto m-0"
             dangerouslySetInnerHTML={{ __html: CODE_HTML }}
           />
-        </div>
-      </div>
-    </section>
+        </motion.div>
+      </motion.div>
+    </motion.section>
   );
 }

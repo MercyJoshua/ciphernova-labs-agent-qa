@@ -1,3 +1,7 @@
+"use client";
+
+import { motion, type Variants } from "motion/react";
+
 const items = [
   {
     q: "Where do the test runs go?",
@@ -21,25 +25,50 @@ const items = [
   },
 ];
 
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.08 },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
 export default function FAQ() {
   return (
-    <section id="faq" className="w-full max-w-[1600px] mx-auto px-10 py-25 max-[768px]:px-5 max-[768px]:py-17.5">
+    <motion.section
+      id="faq"
+      className="w-full max-w-[1600px] mx-auto px-10 py-25 max-[768px]:px-5 max-[768px]:py-17.5"
+      variants={sectionVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: false, amount: 0.25 }}
+    >
       <div className="flex flex-col items-center text-center mb-16">
-        <div className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/3 mb-6">
+        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/3 mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-[--accent-pink] shadow-[0_0_8px_var(--accent-pink)]" />
           Questions
-        </div>
-        <h2 className="xero-section-title font-light leading-[1.1] tracking-tight m-0">
+        </motion.div>
+        <motion.h2 variants={itemVariants} className="xero-section-title font-light leading-[1.1] tracking-tight m-0">
           Answers, before{" "}
           <strong className="font-normal xero-gradient-text">
             you run.
           </strong>
-        </h2>
+        </motion.h2>
       </div>
 
       <div className="max-w-205 mx-auto w-full">
         {items.map((it, i) => (
-          <details key={i} className="group">
+          <motion.details
+            key={i}
+            className="group"
+            variants={itemVariants}
+          >
             <summary className="w-full list-none text-[--text] py-5.5 px-1 text-[0.98rem] tracking-[-0.005em] flex items-center justify-between cursor-pointer gap-6 [&::-webkit-details-marker]:hidden">
               <span>{it.q}</span>
               <svg
@@ -56,9 +85,9 @@ export default function FAQ() {
             <div className="faq-answer open text-[0.88rem] text-white/50 leading-[1.65]">
               {it.a}
             </div>
-          </details>
+          </motion.details>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }

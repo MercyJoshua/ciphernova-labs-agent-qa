@@ -1,7 +1,8 @@
 "use client";
 
+import { Suspense, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   Bot,
@@ -29,6 +30,24 @@ const previewChecks = [
   },
 ];
 
+function AgentUrlSync({
+  setAgentUrl,
+}: {
+  setAgentUrl: Dispatch<SetStateAction<string>>;
+}) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const incomingAgentUrl = searchParams.get("agentUrl");
+
+    if (incomingAgentUrl) {
+      setAgentUrl(incomingAgentUrl);
+    }
+  }, [searchParams, setAgentUrl]);
+
+  return null;
+}
+
 export default function SubmitAgentPage() {
   const [agentUrl, setAgentUrl] = useState("https://");
   const [description, setDescription] = useState(
@@ -38,6 +57,9 @@ export default function SubmitAgentPage() {
   return (
     <>
       <Header mode="submit" />
+      <Suspense fallback={null}>
+        <AgentUrlSync setAgentUrl={setAgentUrl} />
+      </Suspense>
       <main className="w-full max-w-[1600px] mx-auto px-3.5 pb-8 pt-4 md:px-6 md:pb-10 md:pt-6">
         <div className="xero-card relative overflow-hidden rounded-[20px] px-6 py-6 md:px-10 md:py-8">
         <div className="xero-hero-arc absolute inset-0 pointer-events-none z-0" />
