@@ -72,7 +72,17 @@ uvicorn demo_agent:app --port 8001 --reload
 uvicorn main:app --port 8000 --reload
 ```
 
-### 5. Run a test against the demo agent
+### 5. Start the frontend dashboard
+
+```bash
+# In a new terminal from the repo root
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:3000` in your browser to submit tests and view results.
+
+### 6. Alternative: Run a test via CLI (curl)
 
 ```bash
 curl -X POST http://localhost:8000/run \
@@ -84,7 +94,7 @@ curl -X POST http://localhost:8000/run \
 # Returns: { "run_id": "abc12345", "status": "pending", ... }
 ```
 
-### 6. Poll for results
+### 7. Poll for results
 
 ```bash
 curl http://localhost:8000/results/abc12345
