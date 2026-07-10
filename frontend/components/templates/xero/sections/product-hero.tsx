@@ -54,7 +54,7 @@ const fadeUp: Variants = {
   },
 };
 
-const heroVideoSrc = "/hero-video.mp4";
+const heroVideoSrc = "/bg-video.mp4";
 
 export default function ProductHero() {
   const router = useRouter();
@@ -83,7 +83,7 @@ export default function ProductHero() {
           min-h-[clamp(34rem,78vh,52rem)]
           overflow-hidden
           rounded-[32px]
-          bg-[radial-gradient(circle_at_top_left,_rgba(40,52,101,0.9),_rgba(15,18,33,0.98)_70%,_rgba(8,10,18,1))]
+          bg-[radial-gradient(circle_at_top_left,_rgba(40,52,101,0.9),_rgba(15,18,33,0.98)_70%,_rgba(40,52,101,0.9))]
           text-white
           shadow-[0_28px_120px_rgba(0,0,0,0.42)]
         "
@@ -187,7 +187,7 @@ export default function ProductHero() {
                 font-medium
                 leading-[0.95]
                 tracking-[-0.055em]
-                text-white
+                xero-gradient-text
               "
             >
               {heroContent.title}
@@ -202,7 +202,7 @@ export default function ProductHero() {
                 max-w-[32rem]
                 text-[clamp(0.95rem,1.5vw,1.1rem)]
                 leading-relaxed
-                text-white/65
+                text-[white]/65
               "
             >
               {heroContent.description}
