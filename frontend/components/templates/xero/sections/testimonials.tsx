@@ -1,3 +1,7 @@
+"use client";
+
+import { motion, type Variants } from "motion/react";
+
 const quotes = [
   {
     text: "We found a prompt injection path before launch and fixed it the same day. The report made the failure obvious.",
@@ -19,26 +23,47 @@ const quotes = [
   },
 ];
 
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.08 },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+};
+
 export default function Testimonials() {
   return (
-    <section className="w-full max-w-[1600px] mx-auto px-10 py-25 max-[768px]:px-5 max-[768px]:py-17.5">
+    <motion.section
+      className="w-full max-w-[1600px] mx-auto px-10 py-25 max-[768px]:px-5 max-[768px]:py-17.5"
+      variants={sectionVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: false, amount: 0.25 }}
+    >
       <div className="flex flex-col items-center text-center mb-16">
-        <div className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/3 mb-6">
+        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 text-[0.75rem] text-[--text-muted] uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full bg-white/3 mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-[--accent-pink] shadow-[0_0_8px_var(--accent-pink)]" />
           Team feedback
-        </div>
-        <h2 className="xero-section-title font-light leading-[1.1] tracking-tight m-0 max-w-190">
+        </motion.div>
+        <motion.h2 variants={itemVariants} className="xero-section-title font-light leading-[1.1] tracking-tight m-0 max-w-190">
           Teams that ship{" "}
           <strong className="xero-gradient-text font-normal">
             without guessing.
           </strong>
-        </h2>
+        </motion.h2>
       </div>
 
       <div className="grid grid-cols-3 gap-4 max-[980px]:grid-cols-2 max-[768px]:grid-cols-1">
         {quotes.map((q, i) => (
-          <div
+          <motion.div
             key={i}
+            variants={itemVariants}
             className="xero-card relative rounded-[20px] p-7 flex flex-col max-[480px]:p-6"
           >
             <div className="xero-quote-mark text-[2.4rem] font-light leading-[0.6] mb-4 opacity-70">
@@ -56,9 +81,9 @@ export default function Testimonials() {
                 <div className="text-[0.75rem] text-[--text-muted]">{q.role}</div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }
