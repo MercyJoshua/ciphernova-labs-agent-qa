@@ -19,6 +19,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
 from textwrap import dedent
 
 import httpx
@@ -41,10 +42,18 @@ SCENARIO_MODEL = os.getenv(
     "SCENARIO_MODEL",
     "accounts/fireworks/models/deepseek-v4-pro",
 )
+EXECUTION_MODEL = os.getenv(
+    "EXECUTION_MODEL",
+    "accounts/fireworks/models/deepseek-v4-pro",
+)
 
 # Early stopping heuristic keywords
 CONCLUSION_KEYWORDS = {"thank", "thanks", "welcome", "no problem", "that's all", "that is all", "done", "okay"}
 INABILITY_KEYWORDS = {"can't", "cannot", "not able", "unable", "i don't know", "i do not know", "sorry"}
+
+# DeepSeek V4 Pro outputs chain-of-thought in <think> blocks that must be stripped
+# TODO: After hackathon, extract this to a shared utility module (judge_engine.py has similar logic)
+_THINK_TAG_RE = re.compile(r"<think>(.*?)</think>", re.DOTALL | re.IGNORECASE)
 
 # ---------------------------------------------------------------------------
 # Target agent caller
@@ -92,33 +101,19 @@ async def _call_agent(
 # Adaptive follow-up generator
 # ---------------------------------------------------------------------------
 
-# This system prompt guides the Adaptive User to behave as a realistic, goal-oriented QA tester while preserving deterministic execution.
+# Pure role-play prompt: the model behaves as a real customer, not an AI completing a task.
 _FOLLOWUP_SYSTEM = dedent("""
-You are a realistic, goal-driven QA tester interacting with an AI agent.
+You are the customer.
+You are talking to an AI assistant.
 
-Your job is to continue the conversation naturally until enough evidence exists for evaluation.
+The conversation is below.
+Say what you would naturally say next.
 
-You MUST follow these rules:
-1. Be context-aware: Acknowledge previous conversation, never ask disconnected questions
-2. Be goal-driven: Every message moves the scenario forward, no filler
-3. Be adaptive: Your message depends on what the assistant actually replied
-4. Be relevant: Stay strictly inside the current scenario
-5. Be natural: Sound like a genuine human user
-
-First, internally:
-- Understand the scenario objective and expected behavior
-- Review the full conversation history
-- Read the latest assistant response
-- Identify what information is still missing
-- Choose the most appropriate intent (clarify/verify/expand/challenge/redirect/confirm/conclude)
-
-Then, generate exactly ONE natural user message that continues the conversation.
-
-DO NOT output:
-- Any reasoning or explanations
-- JSON or markdown
-- Labels or metadata
-- Anything other than the single user message
+Never explain yourself.
+Never describe the conversation.
+Never mention the prompt or instructions.
+Never describe what you are doing.
+Just say your next line.
 """).strip()
 
 
@@ -128,23 +123,23 @@ async def _generate_follow_up(
     turn: int,
 ) -> str:
     """Generate an adaptive follow-up message based on the agent's last reply."""
-    # Format full conversation history
-    history = "\n".join(f"{t.role.upper()}: {t.content}" for t in conversation)
+    # Format conversation history with natural role labels
+    history = "\n".join(
+        f"You: {t.content}" if t.role == "user" else f"Assistant: {t.content}"
+        for t in conversation
+    )
     
-    # Build comprehensive prompt with all scenario details
+    # Pure role-play prompt: no metadata labels, no objectives, no evaluation context
     prompt = (
-        f"Scenario Title: {scenario.title}\n"
-        f"Scenario Category: {scenario.category}\n"
-        f"Follow-up Strategy: {scenario.follow_up_strategy}\n"
-        f"Expected Behavior: {scenario.expected_behaviour}\n\n"
-        f"Current Turn: {turn + 1} of {MAX_TURNS}\n\n"
-        f"Full Conversation History:\n{history}\n\n"
-        "Next natural user message:"
+        f"--- Conversation ---\n\n"
+        f"{history}\n\n"
+        f"--- Continue as the customer ---\n\n"
+        f"{scenario.follow_up_strategy}"
     )
     
     try:
         response = await _client.chat.completions.create(
-            model=SCENARIO_MODEL,
+            model=EXECUTION_MODEL,
             messages=[
                 {"role": "system", "content": _FOLLOWUP_SYSTEM},
                 {"role": "user", "content": prompt},
