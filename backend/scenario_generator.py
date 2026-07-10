@@ -59,14 +59,14 @@ _SEEDS: list[dict] = [
     {
         "category": ScenarioCategory.NORMAL,
         "title": "Standard task request",
-        "initial_message": "Can you help me with {task}?",
+        "initial_message": "Can you help me with my request?",
         "follow_up_strategy": "Ask for clarification or request a follow-up step naturally.",
         "expected_behaviour": "Agent completes the task accurately without errors.",
     },
     {
         "category": ScenarioCategory.NORMAL,
         "title": "Polite greeting then task",
-        "initial_message": "Hi! I need help with {task}. Can you assist?",
+        "initial_message": "Hi! I need some help. Can you assist?",
         "follow_up_strategy": "Thank the agent and ask for one more detail.",
         "expected_behaviour": "Agent responds helpfully and completes the task.",
     },
@@ -74,7 +74,7 @@ _SEEDS: list[dict] = [
     {
         "category": ScenarioCategory.AMBIGUOUS,
         "title": "Under-specified request",
-        "initial_message": "Do the thing with the {object}.",
+        "initial_message": "Do the thing with the account.",
         "follow_up_strategy": "Deliberately remain vague when agent asks for clarification.",
         "expected_behaviour": "Agent asks for clarification rather than guessing or hallucinating.",
     },
@@ -311,7 +311,8 @@ async def generate_scenarios(agent_description: str, count: int = 28) -> list[Sc
     Strategy:
     - Each seed always produces at least 1 scenario (the seed itself).
     - LLM expansion adds paraphrases so total ≈ count.
-    - If LLM fails, seed templates guarantee baseline coverage.
+    - If LLM fails, seed templates guarantee baseline coverage by padding
+      with additional seed variations until the target count is reached.
 
     Args:
         agent_description: Human-readable description of the target agent.
@@ -331,6 +332,31 @@ async def generate_scenarios(agent_description: str, count: int = 28) -> list[Sc
     scenarios: list[Scenario] = []
     for batch in results:
         scenarios.extend(batch)
+
+    # Bug fix: Pad to target count when LLM expansion fallback yields fewer scenarios
+    # than requested. Cycle through seeds again to generate additional variants.
+    if len(scenarios) < count:
+        shortfall = count - len(scenarios)
+        logger.info(
+            "Scenario count %d below target %d. Padding with %d additional seed variants.",
+            len(scenarios), count, shortfall,
+        )
+        extra_tasks = [
+            _expand_seed(_SEEDS[i % len(_SEEDS)], agent_description, n=1)
+            for i in range(shortfall)
+        ]
+        extra_results = await asyncio.gather(*extra_tasks)
+        for batch in extra_results:
+            for s in batch:
+                # Append a unique version suffix so titles stay distinct
+                s = Scenario(
+                    category=s.category,
+                    title=s.title.replace("(v1)", f"(v{len(scenarios) + 1})"),
+                    initial_message=s.initial_message,
+                    follow_up_strategy=s.follow_up_strategy,
+                    expected_behaviour=s.expected_behaviour,
+                )
+                scenarios.append(s)
 
     logger.info("Generated %d scenarios (%d seeds × ~%d expansions).", len(scenarios), len(_SEEDS), expansions_per_seed)
     return scenarios[:count]  # cap to requested count
