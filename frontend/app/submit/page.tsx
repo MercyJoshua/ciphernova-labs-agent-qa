@@ -18,6 +18,8 @@ import { startRun } from "@/lib/api";
 
 const scenarioChips = ["Normal task", "Edge case", "Ambiguity", "Prompt injection", "Attack intent"];
 
+const DEMO_AGENT_URL = "http://localhost:8001/chat";
+
 const previewChecks = [
   {
     title: "Endpoint validation",
@@ -53,7 +55,7 @@ function AgentUrlSync({
 
 export default function SubmitAgentPage() {
   const router = useRouter();
-  const [agentUrl, setAgentUrl] = useState("https://");
+  const [agentUrl, setAgentUrl] = useState(DEMO_AGENT_URL);
   const [description, setDescription] = useState(
     "A support agent that helps users with account questions, bookings, and refunds.",
   );
@@ -62,9 +64,22 @@ export default function SubmitAgentPage() {
 
   async function handleSubmit() {
     setError(null);
+
+    const normalizedAgentUrl = agentUrl.trim();
+
+    try {
+      const url = new URL(normalizedAgentUrl);
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        throw new Error("unsupported protocol");
+      }
+    } catch {
+      setError("Enter a complete HTTP(S) endpoint, for example http://localhost:8001/chat.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const data = await startRun({ agent_url: agentUrl, description });
+      const data = await startRun({ agent_url: normalizedAgentUrl, description });
       router.push(`/results/${data.run_id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -129,13 +144,17 @@ export default function SubmitAgentPage() {
                   <span className="mb-2 block text-[0.78rem] uppercase tracking-[0.14em] text-[--text-muted]">Agent URL</span>
                   <div className="xero-node rounded-2xl p-3 transition-transform duration-200 focus-within:scale-[1.005]">
                     <input
+                      type="url"
                       value={agentUrl}
                       onChange={(event) => setAgentUrl(event.target.value)}
-                      placeholder="https://your-agent.example.com/chat"
+                      placeholder={DEMO_AGENT_URL}
                       disabled={loading}
                       className="w-full border-0 bg-transparent text-[0.95rem] text-[--text] outline-none placeholder:text-white/25 disabled:opacity-50"
                     />
                   </div>
+                  <span className="mt-2 block text-[0.76rem] text-[--text-muted]">
+                    Local demo: {DEMO_AGENT_URL}
+                  </span>
                 </label>
 
                 <label className="block">
@@ -173,7 +192,7 @@ export default function SubmitAgentPage() {
                 <div className="flex flex-wrap gap-3 pt-2">
                   <button
                     onClick={handleSubmit}
-                    disabled={loading || !agentUrl || agentUrl === "https://"}
+                    disabled={loading || !agentUrl.trim()}
                     className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.9rem] font-semibold text-[#0a0a0f] transition-all hover:opacity-90 hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0"
                   >
                     {loading ? (
@@ -234,7 +253,7 @@ export default function SubmitAgentPage() {
                   <div className="space-y-3 text-[0.86rem] text-white/65">
                     <div className="flex items-center justify-between gap-3 rounded-xl bg-white/3 px-3 py-2">
                       <span>Target</span>
-                      <span className="truncate text-white/45">{agentUrl || "https://"}</span>
+                      <span className="truncate text-white/45">{agentUrl || DEMO_AGENT_URL}</span>
                     </div>
                     <div className="flex items-center justify-between gap-3 rounded-xl bg-white/3 px-3 py-2">
                       <span>Scenarios</span>
