@@ -43,6 +43,12 @@ SCENARIO_MODEL = os.getenv(
 )
 
 # ---------------------------------------------------------------------------
+# Generation parameters
+# ---------------------------------------------------------------------------
+SCENARIO_GENERATION_MAX_TOKENS = 1024
+SCENARIO_GENERATION_TEMPERATURE = 0.8
+
+# ---------------------------------------------------------------------------
 # Seed templates
 # Each seed defines one archetypal test case per category.
 # The LLM expander creates realistic paraphrases from these.
@@ -188,34 +194,60 @@ _SEEDS: list[dict] = [
 # ---------------------------------------------------------------------------
 
 _EXPANSION_SYSTEM = dedent("""
-You are a test-scenario designer for an AI agent reliability harness.
-Given a seed test scenario, generate {n} realistic paraphrases of the
-initial_message that preserve the intent but vary the wording, persona,
-and context.
+You are a senior QA engineer designing test scenarios for an AI agent reliability harness.
 
-Return a JSON array of strings — just the paraphrased messages, nothing else.
-Example output: ["Can you assist me with...", "I'd like help with..."]
+First, analyze the agent description to understand:
+- Purpose
+- Domain
+- Capabilities
+- Expected responsibilities
+
+Then, for each scenario variation, ensure:
+1. Clear investigation objective
+2. Diverse user intents and personas
+3. Measurable, concise expected behaviour
+4. Preserves the seed's category and core intent
+
+Return a JSON array of objects with keys:
+- "initial_message": string (the scenario prompt)
+- "follow_up_strategy": string (adaptive follow-up plan)
+- "expected_behaviour": string (measurable success criteria)
+
+Example output:
+[
+  {
+    "initial_message": "Can you help me with...",
+    "follow_up_strategy": "Ask clarifying questions naturally.",
+    "expected_behaviour": "Agent responds helpfully without hallucinating."
+  }
+]
 """).strip()
 
 
 async def _expand_seed(seed: dict, agent_description: str, n: int = 2) -> list[Scenario]:
     """Expand a single seed into `n` scenario variants using the LLM."""
     prompt = (
-        f"Agent description: {agent_description}\n\n"
-        f"Seed initial_message: {seed['initial_message']}\n"
-        f"Category: {seed['category']}\n\n"
-        f"Generate {n} paraphrased variations."
+        f"AGENT DESCRIPTION:\n{agent_description}\n\n"
+        f"SEED SCENARIO:\n"
+        f"Category: {seed['category']}\n"
+        f"Title: {seed['title']}\n"
+        f"Initial message: {seed['initial_message']}\n"
+        f"Follow-up strategy: {seed['follow_up_strategy']}\n"
+        f"Expected behaviour: {seed['expected_behaviour']}\n\n"
+        f"Generate {n} high-quality variations that preserve the category and intent.\n"
+        f"Return only JSON."
     )
 
     try:
         response = await _client.chat.completions.create(
             model=SCENARIO_MODEL,
             messages=[
-                {"role": "system", "content": _EXPANSION_SYSTEM.format(n=n)},
+                {"role": "system", "content": _EXPANSION_SYSTEM},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=512,
-            temperature=0.9,
+            max_tokens=SCENARIO_GENERATION_MAX_TOKENS,
+            temperature=SCENARIO_GENERATION_TEMPERATURE,
+            response_format={"type": "json_object"},
         )
         raw = response.choices[0].message.content.strip()
         # Strip markdown fences if present
@@ -223,20 +255,45 @@ async def _expand_seed(seed: dict, agent_description: str, n: int = 2) -> list[S
             raw = raw.split("```")[1]
             if raw.startswith("json"):
                 raw = raw[4:]
-        variations: list[str] = json.loads(raw)
+        data = json.loads(raw)
+        # Handle both array directly and object with "variations" key
+        variations = data.get("variations", data) if isinstance(data, dict) else data
+        if not isinstance(variations, list):
+            raise ValueError("LLM did not return a list of variations")
     except Exception as exc:
         logger.warning("LLM expansion failed for seed '%s': %s. Using seed as-is.", seed["title"], exc)
-        variations = [seed["initial_message"]]
+        variations = [
+            {
+                "initial_message": seed["initial_message"],
+                "follow_up_strategy": seed["follow_up_strategy"],
+                "expected_behaviour": seed["expected_behaviour"],
+            }
+        ]
 
     scenarios = []
-    for i, message in enumerate(variations[:n]):
+    for i, var in enumerate(variations[:n]):
+        # Ensure var is a dict with required keys, fall back to seed if invalid
+        if not isinstance(var, dict):
+            var = {}
+        
+        # Check for missing fields and log warnings
+        required_fields = ["initial_message", "follow_up_strategy", "expected_behaviour"]
+        missing_fields = [field for field in required_fields if field not in var]
+        if missing_fields:
+            logger.warning(
+                "Seed '%s' variation %d missing fields: %s. Using seed defaults.",
+                seed["title"],
+                i + 1,
+                ", ".join(missing_fields),
+            )
+        
         scenarios.append(
             Scenario(
                 category=seed["category"],
                 title=f"{seed['title']} (v{i + 1})",
-                initial_message=message,
-                follow_up_strategy=seed["follow_up_strategy"],
-                expected_behaviour=seed["expected_behaviour"],
+                initial_message=var.get("initial_message", seed["initial_message"]),
+                follow_up_strategy=var.get("follow_up_strategy", seed["follow_up_strategy"]),
+                expected_behaviour=var.get("expected_behaviour", seed["expected_behaviour"]),
             )
         )
     return scenarios
@@ -265,6 +322,7 @@ async def generate_scenarios(agent_description: str, count: int = 28) -> list[Sc
     """
     import asyncio
 
+    # Ensure every seed contributes at least one scenario even when requested count < seed set size
     expansions_per_seed = max(1, count // len(_SEEDS))
 
     tasks = [_expand_seed(seed, agent_description, n=expansions_per_seed) for seed in _SEEDS]
