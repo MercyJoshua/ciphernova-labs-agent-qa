@@ -2,16 +2,19 @@
 
 import { Suspense, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   Bot,
   CheckCircle2,
+  Loader2,
   ShieldAlert,
   Sparkles,
   TerminalSquare,
 } from "lucide-react";
 import Header from "@/components/templates/xero/sections/header";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 const scenarioChips = ["Normal task", "Edge case", "Ambiguity", "Prompt injection", "Attack intent"];
 
@@ -49,10 +52,36 @@ function AgentUrlSync({
 }
 
 export default function SubmitAgentPage() {
+  const router = useRouter();
   const [agentUrl, setAgentUrl] = useState("https://");
   const [description, setDescription] = useState(
     "A support agent that helps users with account questions, bookings, and refunds.",
   );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit() {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agent_url: agentUrl, description }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.detail ?? `Server error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      router.push(`/results?run_id=${data.run_id}`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -114,7 +143,8 @@ export default function SubmitAgentPage() {
                       value={agentUrl}
                       onChange={(event) => setAgentUrl(event.target.value)}
                       placeholder="https://your-agent.example.com/chat"
-                      className="w-full border-0 bg-transparent text-[0.95rem] text-[--text] outline-none placeholder:text-white/25"
+                      disabled={loading}
+                      className="w-full border-0 bg-transparent text-[0.95rem] text-[--text] outline-none placeholder:text-white/25 disabled:opacity-50"
                     />
                   </div>
                 </label>
@@ -126,8 +156,9 @@ export default function SubmitAgentPage() {
                       value={description}
                       onChange={(event) => setDescription(event.target.value)}
                       rows={10}
+                      disabled={loading}
                       placeholder="Describe what the agent does, who uses it, and what a good response looks like."
-                      className="w-full resize-none border-0 bg-transparent text-[0.95rem] leading-[1.6] text-[--text] outline-none placeholder:text-white/25"
+                      className="w-full resize-none border-0 bg-transparent text-[0.95rem] leading-[1.6] text-[--text] outline-none placeholder:text-white/25 disabled:opacity-50"
                     />
                   </div>
                 </label>
@@ -143,14 +174,31 @@ export default function SubmitAgentPage() {
                   ))}
                 </div>
 
+                {error && (
+                  <div className="flex items-center gap-2 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-[0.82rem] text-red-300">
+                    <ShieldAlert className="h-4 w-4 shrink-0" />
+                    {error}
+                  </div>
+                )}
+
                 <div className="flex flex-wrap gap-3 pt-2">
-                  <Link href="/results" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.9rem] font-semibold text-[#0a0a0f] transition-all hover:opacity-90 hover:-translate-y-px">
-                    Preflight run
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  {/* <button className="inline-flex items-center rounded-full bg-white/6 px-6 py-3 text-[0.9rem] font-medium text-[--text] transition-all hover:bg-white/12">
-                    Save draft
-                  </button> */}
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading || !agentUrl || agentUrl === "https://"}
+                    className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.9rem] font-semibold text-[#0a0a0f] transition-all hover:opacity-90 hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Starting run…
+                      </>
+                    ) : (
+                      <>
+                        Preflight run
+                        <ArrowRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </section>
@@ -163,7 +211,6 @@ export default function SubmitAgentPage() {
                   </div>
                   <div>
                     <div className="text-[0.9rem] font-medium text-[--text]">What happens next</div>
-                    {/* <div className="text-[0.78rem] text-[--text-muted]">A short summary of the automated checks and reports you'll get after running the preflight.</div> */}
                   </div>
                 </div>
 
@@ -187,7 +234,6 @@ export default function SubmitAgentPage() {
                   </div>
                   <div>
                     <div className="text-[0.9rem] font-medium text-[--text]">Run preview</div>
-                    {/* <div className="text-[0.78rem] text-[--text-muted]">A quick summary of the report you will get.</div> */}
                   </div>
                 </div>
 
@@ -203,7 +249,7 @@ export default function SubmitAgentPage() {
                     </div>
                     <div className="flex items-center justify-between gap-3 rounded-xl bg-white/3 px-3 py-2">
                       <span>Scenarios</span>
-                      <span className="text-white/45">5 parallel tracks</span>
+                      <span className="text-white/45">~28 parallel tracks</span>
                     </div>
                     <div className="flex items-center justify-between gap-3 rounded-xl bg-white/3 px-3 py-2">
                       <span>Judge</span>
