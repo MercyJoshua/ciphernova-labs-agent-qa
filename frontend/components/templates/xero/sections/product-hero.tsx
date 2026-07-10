@@ -5,7 +5,7 @@ import { useState, type FormEvent } from "react";
 import { motion, type Variants } from "motion/react";
 
 const heroContent = {
-  badge: "AI Agent Reliability Platform",
+  badge: "Preflight · AI Agent Reliability Platform",
 
   title: (
     <>
@@ -22,8 +22,8 @@ const heroContent = {
   inputPlaceholder: "https://your-agent-api.com",
 
   features: [
+    "Prompt injection",
     "Hallucination detection",
-    "Tool-call validation",
     "Multi-turn testing",
     "Reliability scoring",
   ],
@@ -83,7 +83,7 @@ export default function ProductHero() {
           min-h-[clamp(34rem,78vh,52rem)]
           overflow-hidden
           rounded-[32px]
-          bg-[radial-gradient(circle_at_top_left,_rgba(40,52,101,0.9),_rgba(15,18,33,0.98)_70%,_rgba(40,52,101,0.9))]
+          bg-[radial-gradient(circle_at_top_left,rgba(40,52,101,0.9),rgba(15,18,33,0.98)_70%,rgba(40,52,101,0.9))]
           text-white
           shadow-[0_28px_120px_rgba(0,0,0,0.42)]
         "
@@ -152,7 +152,7 @@ export default function ProductHero() {
         >
           <motion.div
             variants={shellVariants}
-            className="max-w-[38rem]"
+            className="max-w-152"
           >
             {/* Badge */}
             <motion.div
@@ -199,7 +199,7 @@ export default function ProductHero() {
               variants={fadeUp}
               className="
                 mt-5
-                max-w-[32rem]
+                max-w-lg
                 text-[clamp(0.95rem,1.5vw,1.1rem)]
                 leading-relaxed
                 text-[white]/65
@@ -216,12 +216,12 @@ export default function ProductHero() {
               className="
                 mt-8
                 flex
-                max-w-[34rem]
+                max-w-136
                 items-center
                 gap-3
                 rounded-full
                 border border-white/10
-                bg-white/[0.06]
+                bg-white/6
                 p-2
                 backdrop-blur-xl
                 max-[640px]:rounded-[24px]
@@ -315,7 +315,7 @@ export default function ProductHero() {
                   className="
                     rounded-full
                     border border-white/10
-                    bg-white/[0.05]
+                    bg-white/5
                     px-4 py-2
                     text-xs
                     text-white/55

@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ui.abdulrahmanasif.dev"),
-  title: "Pre-Flight Check for Agents — CI for agent behavior.",
+  metadataBase: new URL("https://www.ali-hamza.me/"),
+  title: "Pre-Flight Check for Agents - CI for agent behavior.",
   description:
     "Stress-test any AI agent with normal and adversarial conversations, then get a reliability score and failure report.",
 };
