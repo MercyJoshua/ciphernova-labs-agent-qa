@@ -13,8 +13,8 @@ import {
   TerminalSquare,
 } from "lucide-react";
 import Header from "@/components/templates/xero/sections/header";
+import { startRun } from "@/lib/api";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 const scenarioChips = ["Normal task", "Edge case", "Ambiguity", "Prompt injection", "Attack intent"];
 
@@ -64,19 +64,8 @@ export default function SubmitAgentPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agent_url: agentUrl, description }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.detail ?? `Server error: ${res.status}`);
-      }
-
-      const data = await res.json();
-      router.push(`/results?run_id=${data.run_id}`);
+      const data = await startRun({ agent_url: agentUrl, description });
+      router.push(`/results/${data.run_id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setLoading(false);
