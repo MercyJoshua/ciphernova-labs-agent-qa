@@ -158,7 +158,7 @@ function PollingState({ status, runId }: { status: string; runId: string }) {
             ? "Your test run is queued and will start shortly."
             : "Generating scenarios, simulating conversations, and judging responses."}
         </div>
-        <div className="mt-3 text-[0.75rem] text-white/28 tracking-[0.1em] uppercase">
+        <div className="mt-3 text-[0.75rem] text-white/28 tracking-widest uppercase">
           Run ID: {runId}
         </div>
       </div>
