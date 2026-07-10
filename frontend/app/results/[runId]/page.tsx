@@ -1,8 +1,9 @@
 "use client";
 
+import { use } from "react";
+
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import Header from "@/components/templates/xero/sections/header";
 import {
   AlertTriangle,
@@ -15,76 +16,14 @@ import {
   ShieldAlert,
   TrendingUp,
 } from "lucide-react";
-import { Suspense } from "react";
+import {
+  getResults,
+  type FinalReport,
+  type JudgeVerdict,
+  type RunRecord,
+} from "@/lib/api";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 const POLL_INTERVAL_MS = 3000;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types (matches backend Pydantic models exactly)
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface ConversationTurn {
-  role: "user" | "assistant";
-  content: string;
-}
-
-interface Scenario {
-  scenario_id: string;
-  category: "normal" | "ambiguous" | "edge_case" | "prompt_injection" | "attack";
-  title: string;
-  initial_message: string;
-  follow_up_strategy: string;
-  expected_behaviour: string;
-}
-
-interface JudgeVerdict {
-  task_success: boolean;
-  hallucination: boolean;
-  instruction_following: number;
-  safety_violation: boolean;
-  injection_success: boolean;
-  reasoning: string;
-  failure_type: "none" | "hallucination" | "injection" | "instruction_failure" | "safety" | "loop";
-}
-
-interface ScenarioResult {
-  scenario: Scenario;
-  transcript: ConversationTurn[];
-  verdict: JudgeVerdict | null;
-  error: string | null;
-}
-
-interface FailureSummary {
-  scenario_title: string;
-  category: Scenario["category"];
-  failure_type: JudgeVerdict["failure_type"];
-  reasoning: string;
-  transcript: ConversationTurn[];
-}
-
-interface FinalReport {
-  run_id: string;
-  status: "pending" | "running" | "done" | "error";
-  overall_score: number;
-  total_scenarios: number;
-  summary: {
-    task_success_rate: number;
-    hallucination_rate: number;
-    injection_success_rate: number;
-    instruction_failure_rate: number;
-    safety_violations: number;
-  };
-  top_failures: FailureSummary[];
-  all_results: ScenarioResult[];
-}
-
-interface RunRecord {
-  run_id: string;
-  status: "pending" | "running" | "done" | "error";
-  report: FinalReport | null;
-  error: string | null;
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -134,7 +73,7 @@ function KeyValue({ label, value }: { label: string; value: string }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Loading / polling state UI
+// Loading/polling state UI
 // ─────────────────────────────────────────────────────────────────────────────
 
 function PollingState({ status, runId }: { status: string; runId: string }) {
@@ -171,7 +110,7 @@ function PollingState({ status, runId }: { status: string; runId: string }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Full results UI
+// Full report UI
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ReportView({ report }: { report: FinalReport }) {
@@ -197,16 +136,23 @@ function ReportView({ report }: { report: FinalReport }) {
             </strong>
           </h1>
           <p className="mt-4 max-w-150 text-[0.95rem] leading-[1.65] text-white/45">
-            The harness ran {report.total_scenarios} scenarios across normal, adversarial, and edge-case categories and scored each transcript using an LLM judge.
+            The harness ran {report.total_scenarios} scenarios across normal, adversarial, and edge-case
+            categories and scored each transcript using an LLM judge.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Link href="/submit" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.9rem] font-semibold text-[#0a0a0f] transition-all hover:opacity-90 hover:-translate-y-px">
+          <Link
+            href="/submit"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.9rem] font-semibold text-[#0a0a0f] transition-all hover:opacity-90 hover:-translate-y-px"
+          >
             <ArrowLeft className="h-4 w-4" />
             New run
           </Link>
-          <Link href="/" className="inline-flex items-center gap-2 rounded-full bg-white/6 px-6 py-3 text-[0.9rem] font-medium text-[--text] transition-all hover:bg-white/12">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-full bg-white/6 px-6 py-3 text-[0.9rem] font-medium text-[--text] transition-all hover:bg-white/12"
+          >
             Back home
           </Link>
         </div>
@@ -232,7 +178,7 @@ function ReportView({ report }: { report: FinalReport }) {
             </div>
             <div>
               <div className="text-[0.9rem] font-medium text-[--text]">Scenario breakdown</div>
-              <div className="text-[0.78rem] text-[--text-muted]">Expandable rows — click any scenario to see the full transcript and verdict.</div>
+              <div className="text-[0.78rem] text-[--text-muted]">Click any row to expand the transcript and verdict.</div>
             </div>
           </div>
 
@@ -242,7 +188,10 @@ function ReportView({ report }: { report: FinalReport }) {
               const score = verdict ? Math.round(Math.max(0, verdict.instruction_following) * 100) : 0;
 
               return (
-                <details key={result.scenario.scenario_id} className="group rounded-2xl border border-white/6 bg-white/3 p-4 transition-colors open:bg-white/5">
+                <details
+                  key={result.scenario.scenario_id}
+                  className="group rounded-2xl border border-white/6 bg-white/3 p-4 transition-colors open:bg-white/5"
+                >
                   <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -258,7 +207,9 @@ function ReportView({ report }: { report: FinalReport }) {
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <div className="text-[0.72rem] uppercase tracking-[0.14em] text-white/35">Instruction-following</div>
-                        <div className="text-[0.95rem] font-semibold text-white">{verdict ? formatPercent(verdict.instruction_following) : "n/a"}</div>
+                        <div className="text-[0.95rem] font-semibold text-white">
+                          {verdict ? formatPercent(verdict.instruction_following) : "n/a"}
+                        </div>
                       </div>
                       <div className="h-10 w-10 rounded-full border border-white/10 bg-black/20 flex items-center justify-center text-[0.72rem] text-white/65">
                         {score}
@@ -309,29 +260,29 @@ function ReportView({ report }: { report: FinalReport }) {
             </div>
 
             {topFailure && (
-              <div className="mt-4 rounded-2xl border border-white/6 bg-white/3 p-4">
-                <div className="mb-2 text-[0.72rem] uppercase tracking-[0.14em] text-white/40">Top failure</div>
-                <div className="text-[0.92rem] font-medium text-[--text]">{topFailure.scenario_title}</div>
-                <div className="mt-1 text-[0.82rem] text-white/55">{topFailure.reasoning}</div>
-                <div className="mt-2 flex flex-wrap gap-2 text-[0.68rem] uppercase tracking-[0.12em] text-white/45">
-                  <span className="rounded-full border border-white/10 px-2 py-0.5">{topFailure.category}</span>
-                  <span className="rounded-full border border-white/10 px-2 py-0.5">{topFailure.failure_type}</span>
+              <>
+                <div className="mt-4 rounded-2xl border border-white/6 bg-white/3 p-4">
+                  <div className="mb-2 text-[0.72rem] uppercase tracking-[0.14em] text-white/40">Top failure</div>
+                  <div className="text-[0.92rem] font-medium text-[--text]">{topFailure.scenario_title}</div>
+                  <div className="mt-1 text-[0.82rem] text-white/55">{topFailure.reasoning}</div>
+                  <div className="mt-2 flex flex-wrap gap-2 text-[0.68rem] uppercase tracking-[0.12em] text-white/45">
+                    <span className="rounded-full border border-white/10 px-2 py-0.5">{topFailure.category}</span>
+                    <span className="rounded-full border border-white/10 px-2 py-0.5">{topFailure.failure_type}</span>
+                  </div>
                 </div>
-              </div>
-            )}
 
-            {topFailure && (
-              <div className="mt-4 rounded-2xl border border-white/6 bg-[#08070d] p-4">
-                <div className="mb-3 text-[0.72rem] uppercase tracking-[0.14em] text-white/40">Transcript preview</div>
-                <div className="space-y-2">
-                  {topFailure.transcript.map((line, index) => (
-                    <div key={`${line.role}-${index}`} className="rounded-xl bg-white/3 px-3 py-2.5">
-                      <div className="mb-1 text-[0.68rem] uppercase tracking-[0.14em] text-[--text-muted]">{line.role}</div>
-                      <p className="m-0 text-[0.84rem] leading-[1.55] text-white/72">{line.content}</p>
-                    </div>
-                  ))}
+                <div className="mt-4 rounded-2xl border border-white/6 bg-[#08070d] p-4">
+                  <div className="mb-3 text-[0.72rem] uppercase tracking-[0.14em] text-white/40">Transcript preview</div>
+                  <div className="space-y-2">
+                    {topFailure.transcript.map((line, index) => (
+                      <div key={`${line.role}-${index}`} className="rounded-xl bg-white/3 px-3 py-2.5">
+                        <div className="mb-1 text-[0.68rem] uppercase tracking-[0.14em] text-[--text-muted]">{line.role}</div>
+                        <p className="m-0 text-[0.84rem] leading-[1.55] text-white/72">{line.content}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
 
             <div className="mt-4 flex items-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-[0.82rem] text-amber-200/90">
@@ -348,12 +299,11 @@ function ReportView({ report }: { report: FinalReport }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Inner page (needs Suspense boundary for useSearchParams)
+// Page — receives runId from the dynamic route segment
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ResultsInner() {
-  const searchParams = useSearchParams();
-  const runId = searchParams.get("run_id");
+export default function ResultsPage({ params }: { params: Promise<{ runId: string }> }) {
+  const { runId } = use(params);
 
   const [report, setReport] = useState<FinalReport | null>(null);
   const [status, setStatus] = useState<string>("pending");
@@ -361,16 +311,11 @@ function ResultsInner() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!runId) return;
-
     async function poll() {
       try {
-        const res = await fetch(`${BACKEND_URL}/results/${runId}`);
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        const data: FinalReport | RunRecord = await res.json();
+        const data = await getResults(runId);
 
         if ("overall_score" in data) {
-          // FinalReport returned (status=done)
           setReport(data as FinalReport);
           setStatus("done");
           if (intervalRef.current) clearInterval(intervalRef.current);
@@ -393,58 +338,6 @@ function ResultsInner() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [runId]);
 
-  // ── No run_id in URL — no run submitted yet ──────────────────────────────
-  if (!runId) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-6 py-32 text-center">
-        <div className="xero-node flex h-16 w-16 items-center justify-center rounded-full">
-          <ShieldAlert className="h-7 w-7 text-white/50" />
-        </div>
-        <div>
-          <div className="text-[1.1rem] font-light text-[--text]">No run found</div>
-          <div className="mt-2 text-[0.88rem] text-white/45">Submit an agent first to see results here.</div>
-        </div>
-        <Link href="/submit" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.9rem] font-semibold text-[#0a0a0f] hover:opacity-90">
-          <ArrowLeft className="h-4 w-4" />
-          Go to submit
-        </Link>
-      </div>
-    );
-  }
-
-  // ── API error ─────────────────────────────────────────────────────────────
-  if (fetchError) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-6 py-32 text-center">
-        <div className="xero-node flex h-16 w-16 items-center justify-center rounded-full border border-red-400/20">
-          <CircleX className="h-7 w-7 text-red-400" />
-        </div>
-        <div>
-          <div className="text-[1.1rem] font-light text-[--text]">Run failed</div>
-          <div className="mt-2 text-[0.88rem] text-white/45">{fetchError}</div>
-        </div>
-        <Link href="/submit" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.9rem] font-semibold text-[#0a0a0f] hover:opacity-90">
-          <ArrowLeft className="h-4 w-4" />
-          Try again
-        </Link>
-      </div>
-    );
-  }
-
-  // ── Still running / pending ───────────────────────────────────────────────
-  if (!report) {
-    return <PollingState status={status} runId={runId} />;
-  }
-
-  // ── Done ─────────────────────────────────────────────────────────────────
-  return <ReportView report={report} />;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Page export
-// ─────────────────────────────────────────────────────────────────────────────
-
-export default function ResultsPage() {
   return (
     <>
       <Header mode="results" />
@@ -452,13 +345,26 @@ export default function ResultsPage() {
         <section className="xero-card relative overflow-hidden rounded-[24px] px-6 py-6 md:px-10 md:py-8 border border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))]">
           <div className="xero-hero-arc absolute inset-0 pointer-events-none z-0" />
           <div className="xero-hero-grid absolute inset-0 pointer-events-none z-0" />
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-32">
-              <Loader2 className="h-8 w-8 animate-spin text-white/40" />
+
+          {fetchError ? (
+            <div className="flex flex-col items-center justify-center gap-6 py-32 text-center">
+              <div className="xero-node flex h-16 w-16 items-center justify-center rounded-full border border-red-400/20">
+                <CircleX className="h-7 w-7 text-red-400" />
+              </div>
+              <div>
+                <div className="text-[1.1rem] font-light text-[--text]">Run failed</div>
+                <div className="mt-2 text-[0.88rem] text-white/45">{fetchError}</div>
+              </div>
+              <Link href="/submit" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.9rem] font-semibold text-[#0a0a0f] hover:opacity-90">
+                <ArrowLeft className="h-4 w-4" />
+                Try again
+              </Link>
             </div>
-          }>
-            <ResultsInner />
-          </Suspense>
+          ) : !report ? (
+            <PollingState status={status} runId={runId} />
+          ) : (
+            <ReportView report={report} />
+          )}
         </section>
       </main>
     </>
