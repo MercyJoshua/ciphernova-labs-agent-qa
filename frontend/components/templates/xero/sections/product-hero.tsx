@@ -54,7 +54,7 @@ const fadeUp: Variants = {
   },
 };
 
-const heroVideoSrc = "/bg-video.mp4";
+const heroVideoSrc = process.env.NEXT_PUBLIC_HERO_VIDEO_URL;
 
 export default function ProductHero() {
   const router = useRouter();
@@ -98,17 +98,19 @@ export default function ProductHero() {
           }}
           className="absolute inset-0"
         >
-          <video
-            className="h-full w-full object-cover object-center"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            aria-hidden="true"
-          >
-            <source src={heroVideoSrc} type="video/mp4" />
-          </video>
+          {heroVideoSrc && (
+            <video
+              className="h-full w-full object-cover object-center"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+            >
+              <source src={heroVideoSrc} type="video/mp4" />
+            </video>
+          )}
         </motion.div>
 
         {/* Overlay */}
