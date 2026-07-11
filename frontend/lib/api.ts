@@ -3,7 +3,7 @@
  * All fetch calls go through here — base URL, headers, and types in one place.
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://ciphernova-labs-agent-qa.onrender.com";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types (mirrors backend/models.py exactly)

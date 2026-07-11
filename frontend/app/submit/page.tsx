@@ -18,7 +18,7 @@ import { startRun } from "@/lib/api";
 
 const scenarioChips = ["Normal task", "Edge case", "Ambiguity", "Prompt injection", "Attack intent"];
 
-const DEMO_AGENT_URL = "http://localhost:8001/chat";
+const DEMO_AGENT_URL = "https://ciphernova-labs-agent-qa-1.onrender.com/chat";
 
 const previewChecks = [
   {
@@ -73,7 +73,7 @@ export default function SubmitAgentPage() {
         throw new Error("unsupported protocol");
       }
     } catch {
-      setError("Enter a complete HTTP(S) endpoint, for example http://localhost:8001/chat.");
+      setError("Enter a complete HTTP(S) endpoint, for example https://ciphernova-labs-agent-qa-1.onrender.com/chat.");
       return;
     }
 
@@ -153,7 +153,7 @@ export default function SubmitAgentPage() {
                     />
                   </div>
                   <span className="mt-2 block text-[0.76rem] text-[--text-muted]">
-                    Local demo: {DEMO_AGENT_URL}
+                    Demo agent: {DEMO_AGENT_URL}
                   </span>
                 </label>
 
