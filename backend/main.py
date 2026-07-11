@@ -20,6 +20,7 @@ from __future__ import annotations
 import logging
 import os
 from contextlib import asynccontextmanager
+from urllib.parse import urlparse, urlunparse
 
 import json
 
@@ -91,6 +92,28 @@ app.add_middleware(
 
 
 # ---------------------------------------------------------------------------
+# URL normalization
+# ---------------------------------------------------------------------------
+
+
+def _normalize_agent_url(url: str) -> str:
+    """If the URL has no path (or only '/'), append '/chat'.
+
+    Examples:
+      https://example.com/chat    →  https://example.com/chat   (unchanged)
+      https://example.com/v1/chat  →  https://example.com/v1/chat (unchanged)
+      https://example.com          →  https://example.com/chat
+      https://example.com/         →  https://example.com/chat
+    """
+    parsed = urlparse(url)
+    path = parsed.path.rstrip("/")
+    if not path:
+        parsed = parsed._replace(path="/chat")
+        return urlunparse(parsed)
+    return url
+
+
+# ---------------------------------------------------------------------------
 # Background pipeline
 # ---------------------------------------------------------------------------
 
@@ -107,6 +130,7 @@ async def _run_pipeline(run_id: str, agent_url: str, description: str) -> None:
       5. Aggregate into final report
       6. Persist and mark as DONE (or ERROR on failure)
     """
+    agent_url = _normalize_agent_url(agent_url)
     set_running(run_id)
     logger.info("[%s] Pipeline started for agent: %s", run_id, agent_url)
 
