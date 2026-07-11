@@ -52,7 +52,7 @@ class RunRequest(BaseModel):
     agent_url: str = Field(
         ...,
         description="HTTP endpoint of the target agent (OpenAI-compatible chat completion format).",
-        examples=["http://localhost:8001/chat"],
+        examples=["https://ciphernova-labs-agent-qa-1.onrender.com/chat"],
     )
     description: str = Field(
         ...,

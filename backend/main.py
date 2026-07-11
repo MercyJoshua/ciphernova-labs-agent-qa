@@ -21,6 +21,8 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
+import json
+
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -57,6 +59,9 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
+CORS_ORIGINS = json.loads(
+    os.getenv("CORS_ORIGINS", f'["{FRONTEND_ORIGIN}", "http://localhost:5173", "http://localhost:3000"]')
+)
 
 
 @asynccontextmanager
@@ -78,7 +83,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN, "http://localhost:5173", "http://localhost:3000"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
