@@ -20,6 +20,9 @@ from __future__ import annotations
 import logging
 import os
 from contextlib import asynccontextmanager
+from urllib.parse import urlparse, urlunparse
+
+import json
 
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
@@ -29,7 +32,7 @@ from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
 
 from execution_engine import run_all_scenarios  # noqa: E402
-from judge_engine import judge_all  # noqa: E402
+from judge_engine import judge_all_with_consensus  # noqa: E402
 from models import FinalReport, RunRecord, RunRequest, RunResponse, RunStatus  # noqa: E402
 from report_aggregator import aggregate  # noqa: E402
 from scenario_generator import generate_scenarios  # noqa: E402
@@ -57,6 +60,9 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
+CORS_ORIGINS = json.loads(
+    os.getenv("CORS_ORIGINS", f'["{FRONTEND_ORIGIN}", "http://localhost:5173", "http://localhost:3000"]')
+)
 
 
 @asynccontextmanager
@@ -78,11 +84,33 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN, "http://localhost:5173", "http://localhost:3000"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------------------------------------------------------------------
+# URL normalization
+# ---------------------------------------------------------------------------
+
+
+def _normalize_agent_url(url: str) -> str:
+    """If the URL has no path (or only '/'), append '/chat'.
+
+    Examples:
+      https://example.com/chat    →  https://example.com/chat   (unchanged)
+      https://example.com/v1/chat  →  https://example.com/v1/chat (unchanged)
+      https://example.com          →  https://example.com/chat
+      https://example.com/         →  https://example.com/chat
+    """
+    parsed = urlparse(url)
+    path = parsed.path.rstrip("/")
+    if not path:
+        parsed = parsed._replace(path="/chat")
+        return urlunparse(parsed)
+    return url
 
 
 # ---------------------------------------------------------------------------
@@ -102,6 +130,7 @@ async def _run_pipeline(run_id: str, agent_url: str, description: str) -> None:
       5. Aggregate into final report
       6. Persist and mark as DONE (or ERROR on failure)
     """
+    agent_url = _normalize_agent_url(agent_url)
     set_running(run_id)
     logger.info("[%s] Pipeline started for agent: %s", run_id, agent_url)
 
@@ -115,9 +144,9 @@ async def _run_pipeline(run_id: str, agent_url: str, description: str) -> None:
         logger.info("[%s] Running simulations against %s ...", run_id, agent_url)
         results = await run_all_scenarios(scenarios, agent_url)
 
-        # Step 3 — LLM judging
+        # Step 3 — LLM judging (DeepSeek + optional Gemma consensus)
         logger.info("[%s] Running judge engine...", run_id)
-        judged = await judge_all(results)
+        judged = await judge_all_with_consensus(results)
 
         # Step 4 — Aggregation
         logger.info("[%s] Aggregating report...", run_id)

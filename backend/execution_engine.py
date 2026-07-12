@@ -20,6 +20,7 @@ import asyncio
 import logging
 import os
 import re
+import traceback
 from textwrap import dedent
 
 import httpx
@@ -72,8 +73,19 @@ async def _call_agent(
     payload = {
         "messages": [{"role": t.role, "content": t.content} for t in conversation]
     }
+    # ── Diagnostic logging ────────────────────────────────────────────────
+    first_msg = next((m["content"][:120] for m in payload["messages"] if m["role"] == "user"), "")
+    logger.info("DIAG: Calling agent | method=POST url=%s messages=%d first_user_msg=%s",
+                agent_url, len(payload["messages"]), first_msg)
+    # ──────────────────────────────────────────────────────────────────────
     try:
         resp = await http_client.post(agent_url, json=payload, timeout=AGENT_TIMEOUT)
+
+        # ── Diagnostic logging ────────────────────────────────────────────
+        logger.info("DIAG: Agent response | status=%d headers=%s body=%.500s",
+                    resp.status_code, dict(resp.headers), resp.text)
+        # ──────────────────────────────────────────────────────────────────
+
         resp.raise_for_status()
         data = resp.json()
 
@@ -92,9 +104,15 @@ async def _call_agent(
         return str(data)
 
     except httpx.TimeoutException:
+        logger.error("DIAG: Agent timeout | url=%s timeout=%ds", agent_url, AGENT_TIMEOUT)
         raise RuntimeError(f"Agent at {agent_url} timed out after {AGENT_TIMEOUT}s.")
     except httpx.HTTPStatusError as exc:
+        logger.error("DIAG: Agent HTTP error | url=%s status=%d body=%.500s",
+                      agent_url, exc.response.status_code, exc.response.text)
         raise RuntimeError(f"Agent returned HTTP {exc.response.status_code}: {exc.response.text[:200]}")
+    except Exception:
+        logger.error("DIAG: Agent call exception | url=%s\n%s", agent_url, traceback.format_exc())
+        raise
 
 
 # ---------------------------------------------------------------------------

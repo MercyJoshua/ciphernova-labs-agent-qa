@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Suspense } from "react";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://ciphernova-labs-agent-qa.onrender.com";
 const POLL_INTERVAL_MS = 3000;
 
 // ─────────────────────────────────────────────────────────────────────────────
