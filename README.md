@@ -19,6 +19,19 @@ Standard evaluations score static prompts. But agents fail dynamically — they 
 
 ---
 
+## 📸 Screenshots & Demo
+
+| Screenshot | Description |
+|---|---|
+| ![Landing Page](screenshots/landing.png) | Product landing page |
+| ![Submit Agent](screenshots/submit.png) | Agent submission form |
+| ![Results Dashboard](screenshots/results.png) | Reliability score + scenario breakdown |
+| ![Transcript Viewer](screenshots/transcript.png) | Expandable transcript with judge verdict |
+
+> 🎥 **Demo video**: [Watch the full walkthrough →]()
+
+---
+
 ## 🌟 The Breakthrough: Consensus-Based Dual-Judge Architecture
 
 Evaluating an AI agent is notoriously difficult because standard LLM-as-a-judge models either suffer from low recall (missing subtle failures) or low precision (flagging false positives).
@@ -32,6 +45,14 @@ Instead of relying on a single model, our harness executes **parallel concurrent
 ### 🧠 How Consensus Works
 
 Our deterministic resolver mathematically guarantees score stability while routing ambiguous edge cases for human review:
+
+| Condition | Outcome |
+|---|---|
+| `ENABLE_GEMMA_CONSENSUS=false` (default) | Only DeepSeek judges — single-judge mode |
+| Both judges agree (safe or unsafe) | ✅ Consensus verdict used |
+| Judges disagree | ⚠️ Flagged for **human review** with reasoning from both |
+| Gemma unavailable (timeout / error) | 🔄 Falls back to DeepSeek only |
+| `GEMMA_FIREWORKS_API_KEY` not set | 🔄 Falls back to DeepSeek with warning log |
 
 ```mermaid
 graph TD
@@ -55,7 +76,7 @@ We didn't just build a wrapper; we built our own evaluator from the ground up us
 
 Our secondary judge (**Gemma 3 LoRA**) was fine-tuned entirely on local AMD GPUs leveraging the powerful **ROCm compute stack**. 
 
-* **Complete Transparency**: We open-sourced our entire PyTorch/ROCm training recipe. You can find the data pre-processing, ROCm driver alignment, and LoRA parameter tuning steps in the `training/` directory.
+* **Complete Transparency**: We open-sourced our entire PyTorch/ROCm training recipe. You can find the data pre-processing, ROCm driver alignment, and LoRA parameter tuning steps in the [training/](file:///C:/Users/dell/.gemini/antigravity/scratch/agent-qa-harness/training/) directory.
 * **The `Gemma_finetune_wc.ipynb` notebook** showcases our exact methodology for maximizing AMD GPU throughput for LLM fine-tuning.
 
 ---
@@ -122,6 +143,64 @@ Point your browser to `http://localhost:3000` to watch the Dual-Judge system tea
 
 ---
 
+## 🔧 Configuration & Environment Variables
+
+### Backend (`backend/.env`)
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `FIREWORKS_API_KEY` | **Yes** | — | Primary API key for Fireworks AI |
+| `SCENARIO_MODEL` | No | `accounts/fireworks/models/deepseek-v4-pro` | Model used for scenario generation |
+| `EXECUTION_MODEL` | No | `accounts/fireworks/models/deepseek-v4-pro` | Model used for execution follow-ups |
+| `JUDGE_MODEL` | No | `accounts/fireworks/models/deepseek-v4-pro` | Primary evaluation model |
+| `MAX_CONCURRENCY` | No | `30` | Max concurrent scenario runs |
+| `MAX_TURNS` | No | `3` | Max dialogue turns per test case |
+| `FRONTEND_ORIGIN` | No | `http://localhost:3000` | Deployed frontend origin |
+| `CORS_ORIGINS` | No | `["http://localhost:3000", "http://localhost:5173"]` | Allowed origins (JSON format) |
+| `ENABLE_GEMMA_CONSENSUS` | No | `false` | Enable/disable Gemma consensus layer |
+| `GEMMA_FIREWORKS_API_KEY` | No* | — | Separate API key for Gemma (do not reuse primary) |
+| `GEMMA_BASE_URL` | No | `https://api.fireworks.ai/inference/v1` | Custom base URL for Gemma |
+| `GEMMA_MODEL` | No | Custom LoRA | Fine-tuned Gemma LoRA deployment path |
+| `GEMMA_TIMEOUT` | No | `30` | Timeout in seconds for Gemma calls |
+
+### Frontend (`frontend/.env.local`)
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `NEXT_PUBLIC_API_BASE_URL` | No | `https://ciphernova-labs-agent-qa.onrender.com` | Production backend URL |
+| `NEXT_PUBLIC_HERO_VIDEO_URL` | No | — | Custom URL for background hero video |
+
+> **⚠️ Local dev**: Set `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000` in `frontend/.env.local` so the frontend calls your local backend instead of production.
+
+---
+
+## 🌐 Production Deployment
+
+| Service | Platform | URL |
+|---|---|---|
+| **Backend** | Render (Docker) | `https://ciphernova-labs-agent-qa.onrender.com` |
+| **Demo Agent** | Render (Docker) | `https://ciphernova-labs-agent-qa-1.onrender.com` |
+| **Frontend** | Vercel (Next.js) | Vercel deployment |
+
+**Deployment Settings**:
+* **Render**: Set `FIREWORKS_API_KEY` and `CORS_ORIGINS` (including the Vercel app URL).
+* **Vercel**: Set `NEXT_PUBLIC_API_BASE_URL` to the Render backend URL. Root directory should be set to `frontend`.
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+| Layer | Technology |
+|---|---|
+| **Backend** | Python 3.11 · FastAPI · Pydantic v2 · httpx · uvicorn |
+| **Frontend** | Next.js 16 · React 19 · TypeScript · TailwindCSS 4 · Motion |
+| **LLM Provider** | Fireworks AI (OpenAI-compatible) |
+| **Primary Judge** | DeepSeek V4 Pro |
+| **Consensus Judge** | Fine-tuned Gemma 3 (LoRA adapter) |
+| **Hosting** | Render (backend) · Vercel (frontend) |
+
+---
+
 ## 📊 The Scoring Formula
 
 | Metric                  | Weight | Impact |
@@ -137,12 +216,12 @@ Point your browser to `http://localhost:3000` to watch the Dual-Judge system tea
 
 ## 🏆 The Team
 
-| Name       | Role & Scope                               |
-|------------|--------------------------------------------|
-| **Sanjay** | Backend Architecture, Dual-Judge Engine, API|
+| Name | Role & Scope |
+|---|---|
+| **Sanjay** | Backend Architecture, Dual-Judge Engine, API |
 | **Chetan** | Scenario Prompts, Judge Rubric, Eval Logic |
-| **Hamza**  | React Dashboard, UI/UX, Transcript Viewer  |
-| **Mercy**  | Product Strategy, API Contracts, MVP Scope |
+| **Hamza** | React Dashboard, UI/UX, Transcript Viewer |
+| **Mercy** | Product Strategy, API Contracts, MVP Scope |
 
 ---
 <div align="center">
