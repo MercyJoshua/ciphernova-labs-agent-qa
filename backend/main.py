@@ -32,7 +32,7 @@ from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
 
 from execution_engine import run_all_scenarios  # noqa: E402
-from judge_engine import judge_all  # noqa: E402
+from judge_engine import judge_all_with_consensus  # noqa: E402
 from models import FinalReport, RunRecord, RunRequest, RunResponse, RunStatus  # noqa: E402
 from report_aggregator import aggregate  # noqa: E402
 from scenario_generator import generate_scenarios  # noqa: E402
@@ -144,9 +144,9 @@ async def _run_pipeline(run_id: str, agent_url: str, description: str) -> None:
         logger.info("[%s] Running simulations against %s ...", run_id, agent_url)
         results = await run_all_scenarios(scenarios, agent_url)
 
-        # Step 3 — LLM judging
+        # Step 3 — LLM judging (DeepSeek + optional Gemma consensus)
         logger.info("[%s] Running judge engine...", run_id)
-        judged = await judge_all(results)
+        judged = await judge_all_with_consensus(results)
 
         # Step 4 — Aggregation
         logger.info("[%s] Aggregating report...", run_id)
