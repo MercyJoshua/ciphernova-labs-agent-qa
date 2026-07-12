@@ -26,18 +26,24 @@ Agents fail silently — wrong tool calls, hallucinated data, infinite loops, un
 ```
 POST /run
    ↓
-ScenarioGenerator  — creates diverse test cases: normal use, edge cases,
-                     adversarial prompts (injection, jailbreak, ambiguity,
-                     conflicting goals) via Fireworks AI
+ScenarioGenerator    — creates diverse test cases: normal use, edge cases,
+                       adversarial prompts (injection, jailbreak, ambiguity,
+                       conflicting goals) via Fireworks AI
    ↓
-ExecutionEngine    — runs all scenarios CONCURRENTLY against your agent
-                     (asyncio.gather, bounded by semaphore)
+ExecutionEngine      — runs all scenarios CONCURRENTLY against your agent
+                       (asyncio.gather, bounded by semaphore)
    ↓
-JudgeEngine        — DeepSeek V4 Pro on Fireworks scores each transcript:
-                     task success · hallucination · instruction-following ·
-                     safety violations · injection resistance
+JudgeEngine          — DeepSeek V4 Pro on Fireworks scores each transcript:
+                       task success · hallucination · instruction-following ·
+                       safety violations · injection resistance
    ↓
-ReportAggregator   — weighted 0–100 reliability score + failure breakdown
+Gemma Consensus      — fine-tuned Gemma (LoRA) provides a second opinion;
+                       both agree → consensus · disagree → human review
+   ↓
+Human Review Queue   — when judges conflict, the verdict is flagged for
+                       manual review with reasoning from both models
+   ↓
+ReportAggregator     — weighted 0–100 reliability score + failure breakdown
    ↓
 GET /results/{run_id}
 ```
@@ -231,6 +237,101 @@ The `demo_agent.py` is an intentionally vulnerable "FlightBooker Pro" support ag
 | `"book"` / `"flight"` / `"ticket"` | Hallucinates booking confirmation |
 
 **Validated score: 29 / 100** — demonstrating real detection of injections, hallucinations, and loops.
+
+---
+
+## Gemma Consensus Judge
+
+The pipeline includes a **dual-judge consensus system** using a LoRA fine-tuned Gemma model as a second judge alongside the primary DeepSeek V4 Pro judge.
+
+| Condition | Outcome |
+|---|---|
+| `ENABLE_GEMMA_CONSENSUS=false` (default) | Only DeepSeek judges — single-judge mode |
+| Both judges agree (safe or unsafe) | ✅ Consensus verdict used |
+| Judges disagree | ⚠️ Flagged for **human review** with reasoning from both |
+| Gemma unavailable (timeout / error) | 🔄 Falls back to DeepSeek only |
+| `GEMMA_FIREWORKS_API_KEY` not set | 🔄 Falls back to DeepSeek with warning log |
+
+Enable it in `backend/.env`:
+```env
+ENABLE_GEMMA_CONSENSUS=true
+GEMMA_FIREWORKS_API_KEY=your_gemma_key
+GEMMA_MODEL=accounts/spsanjay1010-0mwbn1q/models/judge-lora#accounts/spsanjay1010-0mwbn1q/deployments/gjah7yhx
+```
+
+The fine-tuning notebook and LoRA adapter config are in the `training/` directory.
+
+---
+
+## Environment Variables
+
+### Backend (`backend/.env`)
+
+| Variable | Required | Default |
+|---|---|---|
+| `FIREWORKS_API_KEY` | **Yes** | — |
+| `SCENARIO_MODEL` | No | `accounts/fireworks/models/deepseek-v4-pro` |
+| `EXECUTION_MODEL` | No | `accounts/fireworks/models/deepseek-v4-pro` |
+| `JUDGE_MODEL` | No | `accounts/fireworks/models/deepseek-v4-pro` |
+| `MAX_CONCURRENCY` | No | `30` |
+| `MAX_TURNS` | No | `3` |
+| `FRONTEND_ORIGIN` | No | `http://localhost:3000` |
+| `CORS_ORIGINS` | No | `["http://localhost:3000", "http://localhost:5173"]` |
+| `ENABLE_GEMMA_CONSENSUS` | No | `false` |
+| `GEMMA_FIREWORKS_API_KEY` | No* | — |
+| `GEMMA_BASE_URL` | No | `https://api.fireworks.ai/inference/v1` |
+| `GEMMA_MODEL` | No | LoRA deployment on Fireworks |
+| `GEMMA_TIMEOUT` | No | `30` |
+
+### Frontend (`frontend/.env.local`)
+
+| Variable | Required | Default (fallback in code) |
+|---|---|---|
+| `NEXT_PUBLIC_API_BASE_URL` | No | `https://ciphernova-labs-agent-qa.onrender.com` |
+| `NEXT_PUBLIC_HERO_VIDEO_URL` | No | — |
+
+> **⚠️ Local dev**: Set `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000` in `frontend/.env.local` so the frontend calls your local backend instead of production.
+
+---
+
+## Deployment
+
+| Service | Platform | URL |
+|---|---|---|
+| Backend | Render (Docker) | `https://ciphernova-labs-agent-qa.onrender.com` |
+| Demo Agent | Render (Docker) | `https://ciphernova-labs-agent-qa-1.onrender.com` |
+| Frontend | Vercel (Next.js) | Vercel deployment |
+
+**Render** — set `FIREWORKS_API_KEY` and `CORS_ORIGINS` (include your Vercel URL).  
+**Vercel** — set `NEXT_PUBLIC_API_BASE_URL` to the Render backend URL. Root directory: `frontend`.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.11 · FastAPI · Pydantic v2 · httpx · uvicorn |
+| Frontend | Next.js 16 · React 19 · TypeScript · TailwindCSS 4 · Motion |
+| LLM Provider | Fireworks AI (OpenAI-compatible) |
+| Primary Judge | DeepSeek V4 Pro |
+| Consensus Judge | Fine-tuned Gemma (LoRA adapter) |
+| Hosting | Render (backend) · Vercel (frontend) |
+
+---
+
+## Screenshots & Demo
+
+<!-- Add screenshots and demo video links below -->
+
+| Screenshot | Description |
+|---|---|
+| ![Landing Page](screenshots/landing.png) | Product landing page |
+| ![Submit Agent](screenshots/submit.png) | Agent submission form |
+| ![Results Dashboard](screenshots/results.png) | Reliability score + scenario breakdown |
+| ![Transcript Viewer](screenshots/transcript.png) | Expandable transcript with judge verdict |
+
+> 🎥 **Demo video**: [Watch the full walkthrough →]()
 
 ---
 
