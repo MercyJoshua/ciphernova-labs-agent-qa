@@ -28,7 +28,7 @@ Standard evaluations score static prompts. But agents fail dynamically — they 
 | ![Results Dashboard](screenshots/results.png) | Reliability score + scenario breakdown |
 | ![Transcript Viewer](screenshots/transcript.png) | Expandable transcript with judge verdict |
 
-> 🎥 **Demo video**: [Watch the full walkthrough →]()
+> 🎥 **Demo video**: [Watch the full walkthrough of Gemma Integration →](https://drive.google.com/file/d/17SS2NfRgf58ogHwwbgcnhpnFekmzTYaw/view)
 
 ---
 
@@ -78,6 +78,7 @@ Our secondary judge (**Gemma 3 LoRA**) was fine-tuned entirely on local AMD GPUs
 
 * **Complete Transparency**: We open-sourced our entire PyTorch/ROCm training recipe. You can find the data pre-processing, ROCm driver alignment, and LoRA parameter tuning steps in the [training/](file:///C:/Users/dell/.gemini/antigravity/scratch/agent-qa-harness/training/) directory.
 * **The `Gemma_finetune_wc.ipynb` notebook** showcases our exact methodology for maximizing AMD GPU throughput for LLM fine-tuning.
+* **AMD Usage & Fireworks Deployment Guide**: We documented the detailed step-by-step instructions on [AMD usage and Fireworks deployment](https://drive.google.com/drive/folders/1BFLbaaJEaCpzv9H29omS_0p9Z81oFm_-?usp=sharing) for the fine-tuned adapter.
 
 ---
 
