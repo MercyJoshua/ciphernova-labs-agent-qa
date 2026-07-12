@@ -44,6 +44,40 @@ GET /results/{run_id}
 
 ---
 
+## 🧠 Consensus-Based Dual Judge (Optional)
+
+The harness supports an optional **Consensus-Based Dual-Judge** mode to combine the high recall of our fine-tuned model with the high precision of general reasoning models.
+
+* **Mode 1 (Default)**: DeepSeek-only evaluation.
+* **Mode 2 (Consensus)**: Runs the DeepSeek Judge and our fine-tuned Gemma 3 Judge concurrently (in parallel).
+
+### Consensus Logic (Deterministic)
+* `Safe` + `Safe` ➔ `Safe`
+* `Unsafe` + `Unsafe` ➔ `Unsafe`
+* `Safe` + `Unsafe` (disagreement) ➔ `Human Review` (routes to manual inspection, preserving score stability).
+
+### Configuration (`backend/.env`)
+To enable Mode 2, populate the following variables in your local environment file:
+```ini
+ENABLE_GEMMA_CONSENSUS=true
+GEMMA_FIREWORKS_API_KEY=your_gemma_api_key_here
+GEMMA_MODEL=accounts/spsanjay1010-0mwbn1q/models/judge-lora#accounts/spsanjay1010-0mwbn1q/deployments/gjah7yhx
+GEMMA_BASE_URL=https://api.fireworks.ai/inference/v1
+```
+
+* Gemma execution is fully optional. If the Gemma API endpoint goes offline, times out, or fails auth, the harness logs a warning and falls back to DeepSeek-only mode without breaking the execution pipeline.
+
+---
+
+## 🚀 AMD GPU Fine-Tuning & Training
+
+Our custom judge model (**Gemma 3 LoRA**) was trained on local AMD GPUs utilizing the **ROCm** compute stack. 
+
+* The complete PyTorch/ROCm training recipe, hyperparameter configurations, and epoch validation logs are committed under the [training/](file:///C:/Users/dell/.gemini/antigravity/scratch/agent-qa-harness/training/) folder in the repository root.
+* Notebook `Gemma_finetune_wc.ipynb` details the data pre-processing, ROCm driver alignment, and LoRA parameter tuning steps.
+
+---
+
 ## Quick Start (Local Dev)
 
 ### 1. Set up environment
