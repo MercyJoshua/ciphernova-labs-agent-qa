@@ -220,8 +220,8 @@ Point your browser to `http://localhost:3000` to watch the Dual-Judge system tea
 
 | Name | Role & Scope |
 |---|---|
-| **Sanjay** | Backend Architecture, Dual-Judge Engine, API |
-| **Chetan** | Scenario Prompts, Judge Rubric, Eval Logic |
+| **Sanjay** | Backend Architecture, Gemma Integration, API |
+| **Chetan** | Scenario Prompts, Judge Rubric, Dual-Judge Engine, Eval Logic |
 | **Hamza** | React Dashboard, UI/UX, Transcript Viewer |
 | **Mercy** | Product Strategy, API Contracts, MVP Scope |
 
