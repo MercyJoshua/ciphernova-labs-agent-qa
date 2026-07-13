@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🛡️ AgentGuardian Pro (Agent QA & Reliability Harness)</h1>
+  <h1>🛡️ AI Agent QA & Reliability Harness</h1>
   <p><strong>Detect, prevent, and analyze AI agent failures before they ever reach production.</strong></p>
   
   [![AMD ROCm](https://img.shields.io/badge/Powered%20by-AMD%20ROCm-red.svg?style=for-the-badge)](#-hardware-innovation-amd-rocm-fine-tuning)
@@ -15,7 +15,7 @@ The AI industry has a massive blind spot: **We build autonomous agents, but we d
 
 Standard evaluations score static prompts. But agents fail dynamically — they hallucinate tool calls, leak credentials under adversarial injection, get stuck in infinite loops, and fabricate data. When agents fail, they fail silently. Currently, teams only discover these catastrophic failures when end-users complain.
 
-**AgentGuardian is the CI/CD pipeline for AI Agent Behavior.** It runs adversarial, multi-turn simulations against any agent endpoint and generates a comprehensive reliability report *before* a single user is affected.
+**This harness is the CI/CD pipeline for AI Agent Behavior.** It runs adversarial, multi-turn simulations against any agent endpoint and generates a comprehensive reliability report *before* a single user is affected.
 
 ---
 
