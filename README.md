@@ -26,7 +26,6 @@ Standard evaluations score static prompts. But agents fail dynamically — they 
 | ![Landing Page](screenshots/landing.png) | Product landing page |
 | ![Submit Agent](screenshots/submit.png) | Agent submission form |
 | ![Results Dashboard](screenshots/results.png) | Reliability score + scenario breakdown |
-| ![Transcript Viewer](screenshots/transcript.png) | Expandable transcript with judge verdict |
 
 > 🎥 **Demo video**: [Watch the full walkthrough of Gemma Integration →](https://drive.google.com/file/d/17SS2NfRgf58ogHwwbgcnhpnFekmzTYaw/view)
 
