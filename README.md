@@ -56,14 +56,14 @@ Our deterministic resolver mathematically guarantees score stability while routi
 
 ```mermaid
 graph TD
-    A[Adversarial Scenario Execution] --> B(Parallel Evaluation Engine)
-    B -->|Judge 1| C[DeepSeek V4 Pro]
-    B -->|Judge 2| D[Gemma 3 LoRA]
-    C --> E{Consensus Resolver}
+    A["Adversarial Scenario Execution"] --> B("Parallel Evaluation Engine")
+    B -->|"Judge 1"| C["DeepSeek V4 Pro"]
+    B -->|"Judge 2"| D["Gemma 3 LoRA"]
+    C --> E{"Consensus Resolver"}
     D --> E
-    E -->|Safe + Safe| F((✅ PASS))
-    E -->|Unsafe + Unsafe| G((❌ FAIL))
-    E -->|Safe + Unsafe| H((⚠️ HUMAN REVIEW))
+    E -->|"Agree Safe"| F("✅ PASS")
+    E -->|"Agree Unsafe"| G("❌ FAIL")
+    E -->|"Disagreement"| H("⚠️ HUMAN REVIEW")
 ```
 
 * **Fault-Tolerant by Design**: The execution pipeline is hyper-resilient. If the specialized Gemma endpoint experiences downtime, latency, or auth failures, the engine gracefully falls back to DeepSeek-only mode—ensuring your CI/CD pipeline never breaks.
@@ -93,12 +93,12 @@ sequenceDiagram
     participant RA as Report Aggregator
 
     Pipeline->>SG: POST /run
-    SG->>EE: Generates 50+ adversarial multi-turn test cases
-    EE->>EE: asyncio.gather() concurrent execution
+    SG->>EE: Generates adversarial test cases
+    EE->>EE: asyncio.gather concurrent execution
     EE->>JE: Transcripts
     JE->>JE: DeepSeek + Gemma Consensus Scoring
     JE->>RA: Evaluation Metrics
-    RA-->>Pipeline: Weighted 0-100 Reliability Score
+    RA-->>Pipeline: Weighted Reliability Score
 ```
 
 ---
