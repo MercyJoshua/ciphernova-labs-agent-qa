@@ -163,6 +163,8 @@ Point your browser to `http://localhost:3000` to watch the Dual-Judge system tea
 | `GEMMA_MODEL` | No | Custom LoRA | Fine-tuned Gemma LoRA deployment path |
 | `GEMMA_TIMEOUT` | No | `30` | Timeout in seconds for Gemma calls |
 
+> 💡 **Tip**: Only `FIREWORKS_API_KEY` is required to start testing immediately. All other variables have pre-configured sensible defaults.
+
 ### Frontend (`frontend/.env.local`)
 
 | Variable | Required | Default | Description |
